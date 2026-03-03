@@ -104,27 +104,23 @@
         }
 
         async function fullReset() {
-            if (!confirm("Wirklich ALLES zurücksetzen?")) return;
+            if (!confirm("Wirklich ALLES zurücksetzen? Alle Teams starten wieder bei 1000€.")) return;
             
-            // 1. Markt sofort stoppen
             stopMarket();
-            
-            // 2. Werte zurücksetzen
             currentPrice = 100.00;
-            activeTrend = 'sideways';
-            setTrend('sideways');
             
-            const label = document.getElementById('priceLabel');
-            if(label) label.innerText = "100.00";
-
-            try {
-                // 3. Datenbank bereinigen
-                await db.from('leaderboard').delete().neq('name', '---');
+            // 1. Signal an alle Schüler: Preis kurz auf -1 setzen
+            await db.from('market').update({ price: -1 }).eq('id', 1);
+            
+            // 2. Leaderboard in der DB löschen
+            await db.from('leaderboard').delete().neq('name', '---');
+            
+            // 3. Nach einer kurzen Verzögerung den Markt wieder auf 100€ setzen
+            setTimeout(async () => {
                 await db.from('market').update({ price: 100.00 }).eq('id', 1);
-                alert("Reset erfolgreich!");
-            } catch (err) {
-                console.error("Fehler beim Reset:", err);
-            }
+                document.getElementById('priceLabel').innerText = "100.00";
+                alert("Reset durchgeführt. Alle Teams werden beim nächsten Tick zurückgesetzt.");
+            }, 2000);
         }
     </script>
 </body>
