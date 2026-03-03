@@ -78,7 +78,7 @@
     // --- KONFIGURATION (HIER DEINE DATEN EINTRAGEN) ---
     const SUPABASE_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let price = 100, cash = 1000, shares = 0, history = [], playerName = "";
 
@@ -96,7 +96,7 @@
 
     async function runLoop() {
         // 1. Kurs vom Lehrer-Dashboard holen
-        const { data, error } = await supabase.from('market').select('price').eq('id', 1).single();
+        const { data, error } = await supabaseClient.from('market').select('price').eq('id', 1).single();
         
         if (data) {
             price = data.price;
@@ -111,7 +111,7 @@
 
             // 3. Ergebnis an Leaderboard senden
             let totalValue = +(cash + shares * price).toFixed(2);
-            await supabase.from('leaderboard').upsert({ name: playerName, score: totalValue });
+            await supabaseClient.from('leaderboard').upsert({ name: playerName, score: totalValue });
 
             updateUI(totalValue);
         }
