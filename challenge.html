@@ -157,7 +157,9 @@
         <p>Geben Sie Ihrem Team einen Namen:</p>
         <input type="text" id="playerName" placeholder="Team Name...">
         <br>
-        <button class="btn-start" onclick="startTrading()">Börse betreten</button>
+        <button id="mainStartBtn" class="btn-start" onclick="startTrading()" disabled style="opacity: 0.5; cursor: not-allowed;">
+        🔒 Warte auf Freigabe...
+        </button>
     </div>
 
     <div id="trading-screen" style="display:none;">
