@@ -53,51 +53,36 @@
     function runStep() {
         if(!isRunning) return;
 
-        // 1. Markt simuliere (Zufallsbewegung)
+        // 1. Marktbewegung (Zufall)
         let change = (Math.random() - 0.5) * 4;
         price = Math.max(10, +(price + change).toFixed(2));
         history.push(price);
 
-        // 2. Algorithmus-Logik auslesen
-        let buyAt = parseFloat(document.getElementById('buyTrigger').value);
-        let sellAt = parseFloat(document.getElementById('sellTrigger').value);
+        // 2. Trend-Logik auslesen
+        let lookbackTicks = parseInt(document.getElementById('ticks').value);
+        let percentThreshold = parseFloat(document.getElementById('percent').value) / 100;
 
-        // 3. Entscheidung treffen
-        if (price <= buyAt && cash >= price) {
-            cash -= price;
-            shares++;
-            console.log("Kauf bei " + price);
-        } else if (price >= sellAt && shares > 0) {
-            cash += price;
-            shares--;
-            console.log("Verkauf bei " + price);
+        if (history.length > lookbackTicks) {
+            // Vergleichspreis von vor X Ticks holen
+            let oldPrice = history[history.length - 1 - lookbackTicks];
+            let priceChangeRatio = (price - oldPrice) / oldPrice;
+
+            // STRATEGIE: Wenn Kurs um Y% GESTIEGEN ist -> KAUFEN (Trend reiten)
+            if (priceChangeRatio >= percentThreshold && cash >= price) {
+                cash -= price;
+                shares++;
+                console.log("Trend-Kauf bei " + price);
+            } 
+            // STRATEGIE: Wenn Kurs um Y% GEFALLEN ist -> VERKAUFEN (Stop-Loss)
+            else if (priceChangeRatio <= -percentThreshold && shares > 0) {
+                cash += price;
+                shares--;
+                console.log("Trend-Verkauf bei " + price);
+            }
         }
 
         updateUI();
-        setTimeout(runStep, 500); // Alle 0.5 Sek ein Tick
-    }
-
-    function updateUI() {
-        document.getElementById('price').innerText = price.toFixed(2);
-        document.getElementById('cash').innerText = cash.toFixed(2);
-        document.getElementById('shares').innerText = shares;
-        let total = cash + (shares * price);
-        document.getElementById('total').innerText = total.toFixed(2);
-        drawChart();
-    }
-
-    function drawChart() {
-        const canvas = document.getElementById('chart');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height - history[0]);
-        for(let i=1; i<history.length; i++) {
-            let x = (i / history.length) * canvas.width;
-            let y = canvas.height - (history[i] - 50) * 2; // Skalierung
-            ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        setTimeout(runStep, 500);
     }
 </script>
 </body>
