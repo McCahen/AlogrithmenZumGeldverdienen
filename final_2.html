@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <title>Pro-Trader Terminal | Algorithmen-Workshop</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* --- BASIS DESIGN (Leaderboard Style) --- */
+    <style>    
+        /* --- MODERN LIGHT DESIGN --- */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: #0f172a; /* Dunkelblau vom Leaderboard */
-            color: #f8fafc; 
+            background: #f1f5f9; /* Hellgrauer, freundlicher Hintergrund */
+            color: #1e293b; 
             margin: 0; 
             padding: 20px; 
             display: flex; 
@@ -19,20 +19,20 @@
         .container { 
             width: 100%; 
             max-width: 900px; 
-            background: #1e293b; /* Karten-Hintergrund vom Leaderboard */
+            background: #ffffff; /* Reinweiße Karte */
             padding: 30px; 
             border-radius: 20px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            border: 1px solid #334155;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Sanfter Schatten */
+            border: 1px solid #e2e8f0;
         }
         
-        h2 { color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+        h2 { color: #0284c7; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
         
         /* --- LOGIN SCREEN --- */
         #setup-screen { text-align: center; padding: 50px 0; }
         #playerName { 
-            padding: 15px; width: 250px; border-radius: 10px; border: 1px solid #334155; 
-            background: #0f172a; color: white; font-size: 1.1em; margin-bottom: 20px;
+            padding: 15px; width: 250px; border-radius: 10px; border: 1px solid #cbd5e1; 
+            background: #f8fafc; color: #1e293b; font-size: 1.1em; margin-bottom: 20px;
         }
         
         /* --- TRADING SCREEN HEADER --- */
@@ -40,16 +40,16 @@
             display: grid; 
             grid-template-columns: 1fr 1fr 1fr; 
             gap: 15px;
-            background: #0f172a; 
+            background: #f8fafc; 
             padding: 20px; 
             border-radius: 15px; 
             margin-bottom: 25px; 
-            border: 1px solid #334155;
+            border: 1px solid #e2e8f0;
             text-align: center;
         }
         
-        .market-info div { font-size: 0.9em; color: #94a3b8; }
-        .market-info strong { display: block; font-size: 1.8em; color: #2ecc71; font-family: 'Courier New', monospace; }
+        .market-info div { font-size: 0.9em; color: #64748b; }
+        .market-info strong { display: block; font-size: 1.8em; color: #059669; font-family: 'Courier New', monospace; }
         
         /* --- STRATEGIE KARTEN --- */
         .strategy-grid { 
@@ -60,23 +60,24 @@
         }
         
         .rule-card { 
-            background: #f1f5f9; 
+            background: #ffffff; 
             padding: 20px; 
             border-radius: 15px; 
-            border: 1px solid #334155; 
-            transition: 0.3s;
+            border: 1px solid #e2e8f0; 
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         
-        .rule-card:hover { border-color: #38bdf8; }
+        .rule-card:hover { border-color: #0ea5e9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
-        .buy { border-top: 4px solid #22c55e; }
-        .sell { border-top: 4px solid #ef4444; }
+        .buy { border-top: 5px solid #10b981; }
+        .sell { border-top: 5px solid #ef4444; }
         
-        .rule-card h4 { margin: 0 0 15px 0; color: #f8fafc; font-size: 1.1em; }
+        .rule-card h4 { margin: 0 0 15px 0; color: #0f172a; font-size: 1.1em; }
         
         .input-group { 
-            font-size: 0.85em; 
-            color: #cbd5e1; 
+            font-size: 0.9em; 
+            color: #475569; 
             margin-bottom: 10px; 
             display: flex; 
             align-items: center; 
@@ -84,55 +85,59 @@
         }
         
         input[type="number"] { 
-            background: #0f172a; 
-            border: 1px solid #334155; 
-            color: #38bdf8; 
+            background: #ffffff; 
+            border: 1px solid #cbd5e1; 
+            color: #0284c7; 
             padding: 5px; 
-            border-radius: 5px; 
-            width: 50px; 
+            border-radius: 6px; 
+            width: 55px; 
             text-align: center;
+            font-weight: bold;
         }
         
-        /* --- iOS TOGGLE SWITCH --- */
+        /* --- iOS TOGGLE SWITCH (Light Mode) --- */
         .switch-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #334155;
+            border-top: 1px solid #f1f5f9;
         }
         
-        .switch-label { font-size: 0.8em; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+        .switch-label { font-size: 0.8em; color: #64748b; font-weight: bold; text-transform: uppercase; }
         
         .ios-switch { position: relative; display: inline-block; width: 46px; height: 24px; }
         .ios-switch input { opacity: 0; width: 0; height: 0; }
         
         .ios-slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #334155; transition: .3s; border-radius: 30px;
+            background-color: #e2e8f0; transition: .3s; border-radius: 30px;
         }
         
         .ios-slider:before {
             position: absolute; content: ""; height: 18px; width: 18px;
             left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        input:checked + .ios-slider { background-color: #22c55e; }
+        input:checked + .ios-slider { background-color: #10b981; }
         input:checked + .ios-slider:before { transform: translateX(22px); }
         
         /* --- CHART & LOG --- */
-        canvas { background: #0f172a; border-radius: 10px; margin-top: 10px; border: 1px solid #334155; width: 100%; }
-        #log-msg { font-size: 0.85em; color: #94a3b8; text-align: center; margin-top: 10px; min-height: 1.2em; }
+        canvas { background: #f8fafc; border-radius: 10px; margin-top: 10px; border: 1px solid #e2e8f0; width: 100%; }
+        #log-msg { font-size: 0.9em; color: #64748b; text-align: center; margin-top: 10px; min-height: 1.2em; font-weight: 500; }
         
         .btn-start { 
-            background: #38bdf8; color: #0f172a; border: none; padding: 15px 40px; 
-            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em; 
+            background: #0284c7; color: white; border: none; padding: 15px 40px; 
+            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em;
+            transition: 0.2s;
         }
+        .btn-start:hover { background: #0369a1; }
         
         .footer-stats {
-            text-align: center; padding-top: 20px; border-top: 1px solid #334155; 
-            margin-top: 20px; color: #94a3b8; font-size: 0.9em;
+            text-align: center; padding-top: 20px; border-top: 1px solid #f1f5f9; 
+            margin-top: 20px; color: #64748b; font-size: 0.9em; font-weight: bold;
         }
     </style>
 </head>
