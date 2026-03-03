@@ -23,11 +23,12 @@
     </div>
 
     <div class="controls">
-        <h3>Strategie-Logik:</h3>
-        <p>
-            WENN Preis UNTER <input type="number" id="buyTrigger" value="95"> € DANN <strong>KAUFEN</strong> (1 Stück)<br>
-            WENN Preis ÜBER <input type="number" id="sellTrigger" value="105"> € DANN <strong>VERKAUFEN</strong> (1 Stück)
-        </p>
+        <h3>Trend-Strategie:</h3>
+            <p>
+        Beobachte die letzten <input type="number" id="ticks" value="10"> Ticks.<br>
+        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % steigt: <strong>KAUFEN</strong>.<br>
+        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % fällt: <strong>VERKAUFEN</strong>.
+            </p>
         <button onclick="toggleSimulation()" id="startBtn">Simulation Starten</button>
     </div>
 
