@@ -2,84 +2,103 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>🕹️ Markt-Konsole</title>
+    <title>🕹️ Markt-Konsole | Lehrer-Ansicht</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 30px; text-align: center; }
-        .panel { max-width: 500px; margin: auto; background: #262626; padding: 20px; border-radius: 15px; border: 2px solid #444; }
-        .price { font-size: 4em; color: #2ecc71; margin: 20px 0; font-family: monospace; }
-        .controls button { width: 100%; padding: 15px; margin: 10px 0; cursor: pointer; font-weight: bold; border-radius: 8px; border: none; font-size: 1.1em; }
-        .btn-start { background: #27ae60; color: white; }
-        .btn-stop { background: #e67e22; color: white; }
-        .btn-trend { background: #34495e; color: white; border: 1px solid #555; }
-        .active-trend { border: 3px solid #38bdf8 !important; box-shadow: 0 0 10px #38bdf8; }
-        .status { color: #94a3b8; font-style: italic; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .panel { background: #1e293b; padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #334155; width: 450px; text-align: center; }
+        
+        h2 { color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8em; margin-bottom: 20px; background: #334155; color: #94a3b8; }
+        .active-status { background: #166534; color: #4ade80; }
+
+        .price-display { font-size: 4.5em; font-family: 'Courier New', monospace; font-weight: bold; color: #2ecc71; margin: 20px 0; }
+        
+        .main-btn { width: 100%; padding: 20px; font-size: 1.2em; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
+        .btn-start { background: #22c55e; color: white; }
+        .btn-stop { background: #ef4444; color: white; }
+
+        .trend-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 30px; }
+        .trend-btn { background: #334155; border: 1px solid #475569; color: white; padding: 15px 5px; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
+        .trend-btn.active { background: #38bdf8; border-color: #0ea5e9; font-weight: bold; }
+
+        .reset-btn { background: transparent; color: #64748b; border: none; cursor: pointer; text-decoration: underline; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2>Markt-Steuerung</h2>
-    <div id="status-label" class="status">Markt ist: ANGEHALTEN</div>
-    
-    <button id="mainBtn" class="btn-start" onclick="toggleMarket()">▶️ Markt STARTEN</button>
-    
-    <div class="price" id="priceDisplay">100.00 €</div>
+    <h2>Markt-Kontrolle</h2>
+    <div id="statusBadge" class="status-badge">MARKT ANGEHALTEN</div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
-        <button id="btn-bull" class="btn-trend" onclick="setTrend('bull')">🚀 Bull</button>
-        <button id="btn-sideways" class="btn-trend active-trend" onclick="setTrend('sideways')">↔️ Neutral</button>
-        <button id="btn-bear" class="btn-trend" onclick="setTrend('bear')">📉 Bear</button>
+    <div class="price-display" id="priceOut">100.00</div>
+
+    <button id="masterBtn" class="main-btn btn-start" onclick="toggleMarket()">▶ MARKT STARTEN</button>
+
+    <div class="trend-grid">
+        <button id="btn-bull" class="trend-btn" onclick="setTrend('bull')">🚀 BULL</button>
+        <button id="btn-sideways" class="trend-btn active" onclick="setTrend('sideways')">↔ NEUTRAL</button>
+        <button id="btn-bear" class="trend-btn" onclick="setTrend('bear')">📉 BEAR</button>
     </div>
 
-    <button style="background: #c0392b; color: white; margin-top: 30px;" onclick="reset()">♻️ Reset Leaderboard</button>
+    <button class="reset-btn" onclick="resetAll()">Datenbank & Leaderboard zurücksetzen</button>
 </div>
 
 <script>
-    // --- KONFIGURATION (Bitte ausfüllen) ---
+    // --- INITIALISIERUNG ---
     const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
     const db = supabase.createClient(S_URL, S_KEY);
+    
+    // WICHTIG: Variablen am Anfang deklarieren, um ReferenceErrors zu vermeiden
+    let price = 100.00;
+    let trend = 'sideways';
+    let isRunning = false;
+    let marketInterval = null;
 
-    let price = 100, trend = 'sideways', isRunning = false, interval = null;
+    async function toggleMarket() {
+        const btn = document.getElementById('masterBtn');
+        const badge = document.getElementById('statusBadge');
 
-    function toggleMarket() {
-        isRunning = !isRunning;
-        const btn = document.getElementById('mainBtn');
-        const status = document.getElementById('status-label');
-
-        if (isRunning) {
-            btn.innerText = "⏸️ Markt STOPPEN";
-            btn.className = "btn-stop";
-            status.innerText = "Markt ist: AKTIV";
-            interval = setInterval(tick, 1500);
+        if (!isRunning) {
+            // STARTEN
+            isRunning = true;
+            btn.innerText = "⏸ MARKT STOPPEN";
+            btn.className = "main-btn btn-stop";
+            badge.innerText = "MARKT LÄUFT LIVE";
+            badge.className = "status-badge active-status";
+            marketInterval = setInterval(tick, 1500);
         } else {
-            btn.innerText = "▶️ Markt STARTEN";
-            btn.className = "btn-start";
-            status.innerText = "Markt ist: ANGEHALTEN";
-            clearInterval(interval);
+            // STOPPEN
+            isRunning = false;
+            btn.innerText = "▶ MARKT STARTEN";
+            btn.className = "main-btn btn-start";
+            badge.innerText = "MARKT ANGEHALTEN";
+            badge.className = "status-badge";
+            clearInterval(marketInterval);
         }
     }
 
     async function tick() {
-        let change = (Math.random() - 0.5) * 1.5;
-        if (trend === 'bull') change += 1.4;
-        if (trend === 'bear') change -= 1.6;
+        let change = (Math.random() - 0.5) * 1.2;
+        if (trend === 'bull') change += 1.3;
+        if (trend === 'bear') change -= 1.5;
 
-        price = Math.max(2, +(price + change).toFixed(2));
-        document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
+        price = Math.max(1, +(price + change).toFixed(2));
+        document.getElementById('priceOut').innerText = price.toFixed(2);
 
+        // Update in die Cloud
         await db.from('market').update({ price: price }).eq('id', 1);
     }
 
     function setTrend(t) {
         trend = t;
-        document.querySelectorAll('.btn-trend').forEach(b => b.classList.remove('active-trend'));
-        document.getElementById('btn-' + t).classList.add('active-trend');
+        document.querySelectorAll('.trend-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + t).classList.add('active');
     }
 
-    async function reset() {
-        if(confirm("Alle Schüler-Daten löschen?")) {
+    async function resetAll() {
+        if (confirm("Leaderboard leeren?")) {
             await db.from('leaderboard').delete().neq('name', '---');
             location.reload();
         }
