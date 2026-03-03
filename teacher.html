@@ -74,7 +74,7 @@
     // --- SUPABASE KONFIGURATION ---
     const SUPABASE_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentPrice = 100.00;
     let trendMode = 'sideways';
@@ -92,7 +92,7 @@
         document.getElementById('currentPrice').innerText = currentPrice.toFixed(2) + " €";
         
         // Datenbank Update
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('market')
             .update({ price: currentPrice, trend: trendMode })
             .eq('id', 1);
@@ -102,7 +102,7 @@
 
     // 2. LEADERBOARD-LOOP: Holt alle 2 Sek. die Schüler-Daten
     async function updateLeaderboard() {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('leaderboard')
             .select('name, score')
             .order('score', { ascending: false });
@@ -137,8 +137,8 @@
         trendMode = 'sideways';
         
         // Tabellen leeren
-        await supabase.from('leaderboard').delete().neq('name', 'dummy_val');
-        await supabase.from('market').update({ price: 100.00, trend: 'sideways' }).eq('id', 1);
+        await supabaseClient.from('leaderboard').delete().neq('name', 'dummy_val');
+        await supabaseClient.from('market').update({ price: 100.00, trend: 'sideways' }).eq('id', 1);
         
         logError("System-Reset durchgeführt.");
     }
