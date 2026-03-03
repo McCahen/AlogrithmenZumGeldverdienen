@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>🏆 Live-Ranking | Börsen-Workshop</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; padding: 40px; }
+        h1 { font-size: 3em; color: #38bdf8; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        table { width: 80%; margin: auto; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        th { background: #334155; padding: 20px; font-size: 1.5em; text-align: left; }
+        td { padding: 20px; font-size: 1.8em; border-bottom: 1px solid #334155; }
+        tr:nth-child(1) { background: rgba(234, 179, 8, 0.2); color: #fbbf24; font-weight: bold; }
+        tr:nth-child(1) td:first-child::before { content: "🥇 "; }
+    </style>
+</head>
+<body>
+    <h1>Börsen-Ranking</h1>
+    <table>
+        <thead><tr><th>Rang</th><th>Team</th><th>Depotwert</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+    </table>
+
+    <script>
+        const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
+        const db = supabase.createClient(S_URL, S_KEY);
+
+        async function update() {
+            const { data } = await db.from('leaderboard').select('*').order('score', { ascending: false });
+            if (data) {
+                document.getElementById('leaderboardBody').innerHTML = data.map((row, i) => 
+                    `<tr><td>#${i+1}</td><td>${row.name}</td><td>${row.score.toLocaleString('de-DE')} €</td></tr>`
+                ).join('');
+            }
+        }
+        setInterval(update, 2000);
+    </script>
+</body>
+</html>
