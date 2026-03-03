@@ -35,21 +35,21 @@
     <h2>🚀 Ein erster Versuch: Tief kaufen, hoch verkaufen</h2>
     
     <div class="market-info">
-        <div>Aktueller Kurs: <strong id="price">100</strong> €</div>
-        <div>Depotwert: <strong id="total">1000</strong> €</div>
+        <div>Aktueller Kurs: <strong id="price">100</strong></div>
+        <div>Depotwert: <strong id="total">1000</strong></div>
     </div>
 
     <div class="controls">
         <h3>Strategie-Logik:</h3>
         <p>
-            WENN Preis UNTER <input type="number" id="buyTrigger" value="95"> € DANN <strong>KAUFEN</strong> (1 Stück)<br>
-            WENN Preis ÜBER <input type="number" id="sellTrigger" value="105"> € DANN <strong>VERKAUFEN</strong> (1 Stück)
+            Wenn der Preis unter <input type="number" id="buyTrigger" value="95">ist, dann <b style="color:#0284c7">KAUFEN</b> (1 Stück)<br>
+            Wenn der Preis über  <input type="number" id="sellTrigger" value="105">ist, dann <b style="color:#ef4444">VERKAUFEN</b> (1 Stück)
         </p>
         <button onclick="toggleSimulation()" id="startBtn">Simulation Starten</button>
     </div>
 
     <div style="margin-top: 20px;">
-        <p>Guthaben: <span id="cash">1000</span> € | Aktien im Besitz: <span id="shares">0</span></p>
+        <p>Guthaben: <span id="cash">1000</span> | Aktien im Besitz: <span id="shares">0</span></p>
         <canvas id="chart" width="760" height="200" style="border:1px solid #ccc;"></canvas>
     </div>
 </div>
