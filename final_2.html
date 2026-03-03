@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro-Trader Terminal | Algorithmen-Workshop</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #setup-screen { text-align: center; padding: 40px 0; }
+        .market-info { display: flex; justify-content: space-around; background: #2c3e50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 1.1em; }
+        .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .rule-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa; border-left: 6px solid #ccc; }
+        .buy { border-left-color: #27ae60; }
+        .sell { border-left-color: #e74c3c; }
+        .rule-card h4 { margin: 0 0 10px 0; color: #2c3e50; }
+        input[type="number"] { width: 55px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .input-group { margin-bottom: 8px; font-size: 0.9em; }
+        canvas { background: #fff; border: 1px solid #eee; width: 100%; height: 200px; border-radius: 8px; margin-top: 10px; }
+        .btn-start { background: #2ecc71; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1em; }
+        #log-msg { color: #7f8c8d; font-size: 0.85em; text-align: center; margin-top: 10px; height: 1.2em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="setup-screen">
+        <h2>📈 Kurs-Simulator v2.0</h2>
+        <p>Verbinde dich mit dem Markt-Server:</p>
+        <input type="text" id="playerName" placeholder="Teamname...">
+        <button class="btn-start" onclick="startTrading()">Börse betreten</button>
+    </div>
+
+    <div id="trading-screen" style="display:none;">
+        <div class="market-info">
+            <div>Kurs: <strong id="price">...</strong> €</div>
+            <div>Depotwert: <strong id="total">1000.00</strong> €</div>
+            <div>Team: <span id="player-label"></span></div>
+        </div>
+
+        <div class="strategy-grid">
+            <div class="rule-card buy">
+                <h4>📈 Trend-Kauf</h4>
+                <div class="input-group">Wenn in <input type="number" id="t1" value="5"> Ticks um > <input type="number" id="p1" value="2"> % gestiegen</div>
+                <div class="input-group">DANN kaufe <input type="number" id="a1" value="1"> Stück <input type="checkbox" id="e1"></div>
+            </div>
+            <div class="rule-card sell">
+                <h4>💰 Gewinnmitnahme</h4>
+                <div class="input-group">Wenn in <input type="number" id="t2" value="10"> Ticks um > <input type="number" id="p2" value="5"> % gestiegen</div>
+                <div class="input-group">DANN verkaufe <input type="number" id="a2" value="1"> Stück <input type="checkbox" id="e2"></div>
+            </div>
+            <div class="rule-card buy">
+                <h4>📉 Dip-Kauf</h4>
+                <div class="input-group">Wenn in <input type="number" id="t3" value="8"> Ticks um > <input type="number" id="p3" value="3"> % gefallen</div>
+                <div class="input-group">DANN kaufe <input type="number" id="a3" value="1"> Stück <input type="checkbox" id="e3"></div>
+            </div>
+            <div class="rule-card sell">
+                <h4>🛡️ Stop-Loss</h4>
+                <div class="input-group">Wenn in <input type="number" id="t4" value="3"> Ticks um > <input type="number" id="p4" value="2"> % gefallen</div>
+                <div class="input-group">DANN verkaufe <input type="number" id="a4" value="1"> Stück <input type="checkbox" id="e4"></div>
+            </div>
+        </div>
+
+        <canvas id="chart"></canvas>
+        <div id="log-msg">Warte auf Marktdaten...</div>
+        <p style="text-align:center; font-weight: bold; color: #34495e; border-top: 1px solid #eee; padding-top: 15px;">
+            Verfügbares Cash: <span id="cash">1000.00</span> € | Aktien im Besitz: <span id="shares">0</span>
+        </p>
+    </div>
+</div>
+
+<script>
+    // --- KONFIGURATION (Bitte ausfüllen) ---
+    const S_URL = 'DEINE_SUPABASE_URL';
+    const S_KEY = 'DEINE_SUPABASE_ANON_KEY';
+    
+    const tradingDb = supabase.createClient(S_URL, S_KEY);
+
+    let price = 100, cash = 1000, shares = 0, history = [], playerName = "";
+
+    async function startTrading() {
+        playerName = document.getElementById('playerName').value.trim();
+        if(!playerName) return alert("Bitte Teamnamen eingeben!");
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('trading-screen').style.display = 'block';
+        document.getElementById('player-label').innerText = playerName;
+        runLoop();
+    }
+
+    async function runLoop() {
+        try {
+            const { data } = await tradingDb.from('market').select('price').eq('id', 1).single();
+            if (data) {
+                price = data.price;
+                history.push(price);
+                if(history.length > 50) history.shift();
+
+                // Prüfe alle 4 Regeln
+                checkRule(1, "BUY");  
+                checkRule(2, "SELL"); 
+                checkRule(3, "BUY"); 
+                checkRule(4, "SELL");
+
+                let totalValue = +(cash + shares * price).toFixed(2);
+                await tradingDb.from('leaderboard').upsert({ name: playerName, score: totalValue });
+
+                updateUI(totalValue);
+            }
+        } catch (e) { console.error("Sync Error:", e); }
+        setTimeout(runLoop, 1500);
+    }
+
+    function checkRule(id, action) {
+        if (!document.getElementById('e' + id).checked) return;
+        
+        let t = parseInt(document.getElementById('t' + id).value);
+        let p = parseFloat(document.getElementById('p' + id).value) / 100;
+        let amount = parseInt(document.getElementById('a' + id).value);
+
+        if (history.length > t && amount > 0) {
+            let oldPrice = history[history.length - 1 - t];
+            let change = (price - oldPrice) / oldPrice;
+
+            // Logik für Steigen (Regel 1 & 2) oder Fallen (Regel 3 & 4)
+            let isPositiveChange = (id === 1 || id === 2);
+            
+            if (isPositiveChange && change >= p) {
+                executeTrade(action, amount);
+            } else if (!isPositiveChange && change <= -p) {
+                executeTrade(action, amount);
+            }
+        }
+    }
+
+    function executeTrade(action, amount) {
+        const log = document.getElementById('log-msg');
+        
+        if (action === "BUY") {
+            let cost = amount * price;
+            if (cash >= cost) {
+                cash -= cost;
+                shares += amount;
+                log.innerText = `✅ GEKAUFT: ${amount} Stück bei ${price.toFixed(2)}€`;
+            } else {
+                // Not-Kauf: So viele wie möglich kaufen
+                let possible = Math.floor(cash / price);
+                if (possible > 0) {
+                    cash -= possible * price;
+                    shares += possible;
+                    log.innerText = `⚠️ Nur ${possible} Stück gekauft (Guthaben reicht nicht)`;
+                }
+            }
+        } else if (action === "SELL") {
+            if (shares >= amount) {
+                cash += amount * price;
+                shares -= amount;
+                log.innerText = `💰 VERKAUFT: ${amount} Stück bei ${price.toFixed(2)}€`;
+            } else if (shares > 0) {
+                // Not-Verkauf: Restbestand leeren
+                cash += shares * price;
+                log.innerText = `⚠️ Restliche ${shares} Stück verkauft`;
+                shares = 0;
+            }
+        }
+    }
+
+    function updateUI(total) {
+        document.getElementById('price').innerText = price.toFixed(2);
+        document.getElementById('cash').innerText = cash.toFixed(2);
+        document.getElementById('shares').innerText = shares;
+        document.getElementById('total').innerText = total.toFixed(2);
+        drawChart();
+    }
+
+    function drawChart() {
+        const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        if(history.length < 2) return;
+        
+        ctx.strokeStyle = "#3498db"; ctx.lineWidth = 3; ctx.beginPath();
+        const minP = Math.min(...history) * 0.99, maxP = Math.max(...history) * 1.01;
+        
+        history.forEach((p, i) => {
+            let x = (i / (history.length-1)) * canvas.width;
+            let y = canvas.height - ((p - minP) / (maxP - minP)) * canvas.height;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    }
+</script>
+</body>
+</html>
