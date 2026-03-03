@@ -234,19 +234,25 @@
     let price = 100, cash = 1000, shares = 0, history = [], portfolioHistory = [], playerName = "";
 
     async function checkChallengeStatus() {
-        const { data } = await tradingDb.from('market').select('challenge_active').eq('id', 1).single();
-        const card = document.querySelector('.challenge-card');
-        
-        if (data && data.challenge_active) {
-            card.style.opacity = "1";
-            card.style.pointerEvents = "auto";
-            card.style.filter = "none";
-            card.querySelector('p').innerText = "Der ultimative Test. Maximiere dein Portfolio!";
-        } else {
-            card.style.opacity = "0.5";
-            card.style.pointerEvents = "none"; // Klick deaktivieren
-            card.style.filter = "grayscale(100%)";
-            card.querySelector('p').innerText = "🔒 Gesperrt. Warten Sie auf das Signal des Lehrers.";
+        try {
+            const { data } = await tradingDb.from('market').select('challenge_active').eq('id', 1).single();
+            const startBtn = document.querySelector('.btn-start'); // Der Button im Setup-Screen
+            
+            if (data && data.challenge_active) {
+                // Challenge ist frei
+                startBtn.disabled = false;
+                startBtn.style.opacity = "1";
+                startBtn.innerText = "Börse betreten";
+                startBtn.style.cursor = "pointer";
+            } else {
+                // Challenge ist noch gesperrt
+                startBtn.disabled = true;
+                startBtn.style.opacity = "0.5";
+                startBtn.innerText = "🔒 Startet in Kürze...";
+                startBtn.style.cursor = "not-allowed";
+            }
+        } catch (e) {
+            console.log("Warte auf Datenbank-Verbindung...");
         }
     }
     
