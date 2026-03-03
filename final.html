@@ -91,8 +91,8 @@
         if(!isRunning) return;
 
         // 1. Marktbewegung
-        let volatility = 0.02; 
-        price = +(price * (1 + (Math.random() - 0.5) * volatility)).toFixed(2);
+        const { data } = await supabase.from('market').select('price').single();
+        price = data.price;
         history.push(price);
         if(history.length > 100) history.shift();
 
