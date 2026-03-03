@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro-Algo Trader Workshop</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .market-info { display: flex; justify-content: space-around; background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; font-size: 1.2em; }
+        .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .rule-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa; }
+        .rule-card h4 { margin-top: 0; color: #2980b9; }
+        .buy { border-left: 5px solid #27ae60; }
+        .sell { border-left: 5px solid #e74c3c; }
+        input[type="number"] { width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-container { text-align: center; margin-top: 20px; }
+        #startBtn { padding: 15px 40px; font-size: 1.1em; cursor: pointer; border: none; border-radius: 30px; transition: 0.3s; }
+        .running { background: #e74c3c; color: white; }
+        .stopped { background: #27ae60; color: white; }
+        canvas { background: #fff; border: 1px solid #eee; border-radius: 8px; width: 100%; height: 250px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📈 Strategie-Editor für Fortgeschrittene</h2>
+    
+    <div class="market-info">
+        <div>Kurs: <strong id="price">100.00</strong> €</div>
+        <div>Depotwert: <strong id="total">1000.00</strong> €</div>
+        <div>Cash: <span id="cash">1000.00</span> €</div>
+        <div>Aktien: <span id="shares">0</span></div>
+    </div>
+
+    <div class="strategy-grid">
+        <div class="rule-card buy">
+            <h4>📈 Trend-Kauf</h4>
+            Wenn Kurs in <input type="number" id="t1" value="5"> Ticks<br>
+            um > <input type="number" id="p1" value="2"> % <strong>steigt</strong>:<br>
+            <input type="checkbox" id="e1" checked> Regel aktiv (KAUFEN)
+        </div>
+
+        <div class="rule-card sell">
+            <h4>💰 Gewinnmitnahme</h4>
+            Wenn Kurs in <input type="number" id="t2" value="10"> Ticks<br>
+            um > <input type="number" id="p2" value="5"> % <strong>steigt</strong>:<br>
+            <input type="checkbox" id="e2"> Regel aktiv (VERKAUFEN)
+        </div>
+
+        <div class="rule-card buy">
+            <h4>📉 Dip-Kauf</h4>
+            Wenn Kurs in <input type="number" id="t3" value="8"> Ticks<br>
+            um > <input type="number" id="p3" value="3"> % <strong>fällt</strong>:<br>
+            <input type="checkbox" id="e3"> Regel aktiv (KAUFEN)
+        </div>
+
+        <div class="rule-card sell">
+            <h4>🛡️ Stop-Loss</h4>
+            Wenn Kurs in <input type="number" id="t4" value="3"> Ticks<br>
+            um > <input type="number" id="p4" value="2"> % <strong>fällt</strong>:<br>
+            <input type="checkbox" id="e4" checked> Regel aktiv (VERKAUFEN)
+        </div>
+    </div>
+
+    <canvas id="chart"></canvas>
+
+    <div class="btn-container">
+        <button onclick="toggleSimulation()" id="startBtn" class="stopped">Simulation Starten</button>
+    </div>
+</div>
+
+<script>
+    let price = 100, cash = 1000, shares = 0, isRunning = false, history = [100];
+
+    function toggleSimulation() {
+        isRunning = !isRunning;
+        const btn = document.getElementById('startBtn');
+        btn.innerText = isRunning ? "Simulation Stoppen" : "Simulation Starten";
+        btn.className = isRunning ? "running" : "stopped";
+        if(isRunning) runStep();
+    }
+
+    function runStep() {
+        if(!isRunning) return;
+
+        // 1. Marktbewegung
+        let volatility = 0.02; 
+        price = +(price * (1 + (Math.random() - 0.5) * volatility)).toFixed(2);
+        history.push(price);
+        if(history.length > 100) history.shift();
+
+        // 2. Logik-Prüfung
+        checkRule(1, "BUY", true);  // Steigt -> Kaufen
+        checkRule(2, "SELL", true); // Steigt -> Verkaufen
+        checkRule(3, "BUY", false); // Fällt -> Kaufen
+        checkRule(4, "SELL", false);// Fällt -> Verkaufen
+
+        updateUI();
+        setTimeout(runStep, 600);
+    }
+
+    function checkRule(id, action, positiveDirection) {
+        if (!document.getElementById('e' + id).checked) return;
+
+        let t = parseInt(document.getElementById('t' + id).value);
+        let p = parseFloat(document.getElementById('p' + id).value) / 100;
+
+        if (history.length > t) {
+            let oldPrice = history[history.length - 1 - t];
+            let change = (price - oldPrice) / oldPrice;
+
+            if (positiveDirection && change >= p) {
+                executeTrade(action);
+            } else if (!positiveDirection && change <= -p) {
+                executeTrade(action);
+            }
+        }
+    }
+
+    function executeTrade(action) {
+        if (action === "BUY" && cash >= price) {
+            cash -= price; shares++;
+        } else if (action === "SELL" && shares > 0) {
+            cash += price; shares--;
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('price').innerText = price.toFixed(2);
+        document.getElementById('cash').innerText = cash.toFixed(2);
+        document.getElementById('shares').innerText = shares;
+        document.getElementById('total').innerText = (cash + shares * price).toFixed(2);
+        drawChart();
+    }
+
+    function drawChart() {
+        const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeStyle = "#3498db"; ctx.lineWidth = 2; ctx.beginPath();
+        history.forEach((p, i) => {
+            let x = (i / (history.length-1)) * canvas.width;
+            let y = canvas.height - (p - (Math.min(...history)*0.95)) * 10; 
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    }
+</script>
+</body>
+</html>
