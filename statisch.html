@@ -48,9 +48,12 @@
         <button onclick="toggleSimulation()" id="startBtn">Simulation Starten</button>
     </div>
 
-    <div style="margin-top: 20px;">
-        <p>Guthaben: <span id="cash">1000</span> | Aktien im Besitz: <span id="shares">0</span></p>
-        <canvas id="chart" width="760" height="200" style="border:1px solid #ccc;"></canvas>
+    <canvas id="chart"></canvas>
+
+    <div class="footer-stats">
+        <span>Cash: <b id="cash">1000.00</b> €</span>
+        <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
+        <span>Besitz: <b id="shares">0</b> Stück</span>
     </div>
 </div>
 
@@ -94,27 +97,41 @@
         setTimeout(runStep, 500); // Alle 0.5 Sek ein Tick
     }
 
-    function updateUI() {
-        document.getElementById('price').innerText = price.toFixed(2);
+    function updateUI(total) {
+        document.getElementById('price').innerText = price.toFixed(2) + " €";
         document.getElementById('cash').innerText = cash.toFixed(2);
         document.getElementById('shares').innerText = shares;
-        let total = cash + (shares * price);
-        document.getElementById('total').innerText = total.toFixed(2);
+        document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
+        document.getElementById('total').innerText = total.toFixed(2) + " €";
         drawChart();
     }
 
     function drawChart() {
-        const canvas = document.getElementById('chart');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height - history[0]);
-        for(let i=1; i<history.length; i++) {
-            let x = (i / history.length) * canvas.width;
-            let y = canvas.height - (history[i] - 50) * 2; // Skalierung
-            ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; canvas.height = 240;
+        const padding = 50, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        
+        const minP = Math.min(...history) * 0.98, maxP = Math.max(...history) * 1.02;
+        const minPort = Math.min(...portfolioHistory) * 0.98, maxPort = Math.max(...portfolioHistory) * 1.02;
+
+        const getX = (i) => padding + (i / 49) * w;
+        const getYPrice = (v) => canvas.height - padding - ((v - minP) / (maxP - minP)) * h;
+        const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
+
+        // Achsen & Beschriftung
+        ctx.strokeStyle = "#e2e8f0"; ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, canvas.height-padding); ctx.lineTo(canvas.width-padding, canvas.height-padding); ctx.stroke();
+        
+        ctx.fillStyle = "#94a3b8"; ctx.font = "10px sans-serif";
+        ctx.fillText("ZEIT (TICKS)", canvas.width/2 - 20, canvas.height - 15);
+
+        // Preis (Grau gestrichelt)
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = "#94a3b8"; ctx.beginPath();
+        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v))); ctx.stroke();
+
+        // Portfolio (Blau fett)
+        ctx.setLineDash([]); ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 3; ctx.beginPath();
+        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v))); ctx.stroke();
     }
 </script>
 </body>
