@@ -29,7 +29,7 @@
   <a href="kombiniert.html">Kombiniert</a>
 </nav></br>
 <div class="container">
-    <h2>📈 Strategie-Editor für Fortgeschrittene</h2>
+    <h2>🧬 Kombiniert: Sind Strategien besser?</h2>
     
     <div class="market-info">
         <div>Kurs: <strong id="price">100.00</strong> €</div>
@@ -131,23 +131,87 @@
         }
     }
 
-    function updateUI() {
-        document.getElementById('price').innerText = price.toFixed(2);
+    function updateUI(total) {
+        document.getElementById('price').innerText = price.toFixed(2) + " €";
         document.getElementById('cash').innerText = cash.toFixed(2);
         document.getElementById('shares').innerText = shares;
-        document.getElementById('total').innerText = (cash + shares * price).toFixed(2);
+        document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
+        document.getElementById('total').innerText = total.toFixed(2) + " €";
         drawChart();
     }
 
     function drawChart() {
         const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; canvas.height = 240; // Etwas höher für bessere Sichtbarkeit
+        const padding = 50, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
         ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.strokeStyle = "#3498db"; ctx.lineWidth = 2; ctx.beginPath();
-        history.forEach((p, i) => {
-            let x = (i / (history.length-1)) * canvas.width;
-            let y = canvas.height - (p - (Math.min(...history)*0.95)) * 10; 
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        });
+        
+        if (history.length < 2) return;
+    
+        // --- 1. Skalierung berechnen ---
+        // Linke Achse: Portfolio
+        const minPort = Math.min(...portfolioHistory) * 0.99;
+        const maxPort = Math.max(...portfolioHistory) * 1.01;
+        
+        // Rechte Achse: Aktienpreis
+        const minPrice = Math.min(...history) * 0.98;
+        const maxPrice = Math.max(...history) * 1.02;
+    
+        const getX = (i) => padding + (i / 49) * w;
+        const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
+        const getYPrice = (v) => canvas.height - padding - ((v - minPrice) / (maxPrice - minPrice)) * h;
+    
+        // --- 2. Achsen & Beschriftung zeichnen ---
+        ctx.strokeStyle = "#e2e8f0"; 
+        ctx.lineWidth = 1;
+        ctx.beginPath(); 
+        ctx.moveTo(padding, padding); ctx.lineTo(padding, canvas.height-padding); // Links
+        ctx.lineTo(canvas.width-padding, canvas.height-padding); // Unten
+        ctx.lineTo(canvas.width-padding, padding); // Rechts
+        ctx.stroke();
+    
+        ctx.font = "bold 10px sans-serif";
+    
+        // Linke Beschriftung (Blau - Portfolio)
+        ctx.fillStyle = "#0284c7";
+        ctx.textAlign = "right";
+        ctx.fillText(maxPort.toFixed(0) + " €", padding - 10, padding + 5);
+        ctx.fillText(minPort.toFixed(0) + " €", padding - 10, canvas.height - padding);
+        ctx.save();
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("PORTFOLIO (€)", -canvas.height/2, 15);
+        ctx.restore();
+    
+        // Rechte Beschriftung (Grau - Preis)
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "left";
+        ctx.fillText(maxPrice.toFixed(2) + " €", canvas.width - padding + 10, padding + 5);
+        ctx.fillText(minPrice.toFixed(2) + " €", canvas.width - padding + 10, canvas.height - padding);
+        ctx.save();
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText("AKTIENKURS (€)", canvas.height/2, -(canvas.width - 15));
+        ctx.restore();
+    
+        // X-Achse Beschriftung
+        ctx.fillStyle = "#64748b";
+        ctx.textAlign = "center";
+        ctx.fillText("ZEITVERLAUF (TICKS: Letzte 50 Messpunkte)", canvas.width / 2, canvas.height - 10);
+    
+        // --- 3. Linien zeichnen ---
+        // Aktienkurs (Hintergrund gestrichelt, nutzt rechte Skala)
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = "rgba(10, 95, 45, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v)));
+        ctx.stroke();
+        
+        // Portfolio (Vordergrund fett blau, nutzt linke Skala)
+        ctx.setLineDash([]);
+        ctx.strokeStyle = "#0284c7";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v)));
         ctx.stroke();
     }
 </script>
