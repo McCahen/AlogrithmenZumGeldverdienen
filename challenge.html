@@ -127,18 +127,38 @@
 
     async function checkChallengeStatus() {
         try {
-            const { data } = await tradingDb.from('market').select('challenge_active').eq('id', 1).single();
+            const { data, error } = await tradingDb
+                .from('market')
+                .select('challenge_active')
+                .eq('id', 1) // STIMMT DIE ID? Prüfe das in Supabase!
+                .single();
+    
+            if (error) {
+                console.error("Supabase Abfragefehler:", error.message);
+                return;
+            }
+    
             const btn = document.getElementById('mainStartBtn');
-            if (data && data.challenge_active) {
+            if (!btn) return;
+    
+            // Wir prüfen auf alle Varianten: echtes true, Text "true" oder Text "True"
+            const status = data.challenge_active;
+            const isActive = (status === true || status === 'true' || status === 'True');
+    
+            if (data && isActive) {
                 btn.disabled = false;
                 btn.innerText = "🚀 Börse betreten";
                 btn.style.background = "#10b981";
+                btn.style.cursor = "pointer";
             } else {
                 btn.disabled = true;
                 btn.innerText = "🔒 Warte auf Freigabe...";
                 btn.style.background = "#cbd5e1";
+                btn.style.cursor = "not-allowed";
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error("Kritischer Verbindungsfehler:", e);
+        }
     }
     setInterval(checkChallengeStatus, 2000);
 
