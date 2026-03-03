@@ -5,213 +5,108 @@
     <title>Pro-Trader Terminal | Algorithmen-Workshop</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- MODERN LIGHT DESIGN --- */
-        body { 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: #f1f5f9; 
-            color: #1e293b; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        /* Navigation identisch zu den anderen Seiten */
+        nav { margin-bottom: 20px; padding: 10px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        nav a { margin-right: 15px; text-decoration: none; color: #0284c7; font-weight: bold; }
 
-        .container { 
-            width: 100%; 
-            max-width: 900px; 
-            background: #ffffff; 
-            padding: 30px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            border: 1px solid #e2e8f0;
-        }
+        h2 { color: #0284c7; text-align: center; margin-top: 0; }
 
-        h2 { color: #0284c7; text-transform: uppercase; letter-spacing: 1px; text-align: center; margin-top: 0; }
+        /* Market Info Box */
+        .market-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        .market-info div { font-size: 0.8em; color: #64748b; text-transform: uppercase; }
+        .market-info strong { display: block; font-size: 1.6em; color: #0f172a; margin-top: 5px; }
 
-        /* --- LOGIN SCREEN --- */
-        #setup-screen { text-align: center; padding: 50px 0; }
-        #playerName { 
-            padding: 15px; width: 250px; border-radius: 10px; border: 1px solid #cbd5e1; 
-            background: #f8fafc; color: #1e293b; font-size: 1.1em; margin-bottom: 20px;
-        }
+        /* Strategie-Karten */
+        .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .rule-card { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; border-top: 4px solid #cbd5e1; }
+        .rule-card.buy { border-top-color: #10b981; }
+        .rule-card.sell { border-top-color: #ef4444; }
+        .rule-card h4 { margin: 0 0 10px 0; font-size: 1em; }
+        
+        .input-group { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin-bottom: 5px; }
+        input[type="number"] { width: 50px; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #0284c7; }
 
-        /* --- TRADING SCREEN HEADER --- */
-        .market-info { 
-            display: grid; 
-            grid-template-columns: 1fr 1.5fr 1fr; 
-            gap: 15px;
-            background: #f8fafc; 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin-bottom: 25px; 
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            align-items: center;
-        }
-
-        .market-info div { font-size: 0.85em; color: #64748b; text-transform: uppercase; font-weight: bold; }
-        .market-info strong { display: block; font-size: 1.8em; color: #059669; font-family: 'Courier New', monospace; margin-top: 5px; }
-        #total { color: #0284c7; }
-
-        /* --- STRATEGIE KARTEN --- */
-        .strategy-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 20px; 
-            margin-bottom: 25px; 
-        }
-
-        .rule-card { 
-            background: #ffffff; 
-            padding: 20px; 
-            border-radius: 15px; 
-            border: 1px solid #e2e8f0; 
-            transition: 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .rule-card:hover { border-color: #0ea5e9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .buy { border-top: 5px solid #10b981; }
-        .sell { border-top: 5px solid #ef4444; }
-
-        .rule-card h4 { margin: 0 0 15px 0; color: #0f172a; font-size: 1.1em; }
-
-        .input-group { 
-            font-size: 0.9em; 
-            color: #475569; 
-            margin-bottom: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-        }
-
-        input[type="number"] { 
-            background: #ffffff; 
-            border: 1px solid #cbd5e1; 
-            color: #0284c7; 
-            padding: 5px; 
-            border-radius: 6px; 
-            width: 55px; 
-            text-align: center;
-            font-weight: bold;
-        }
-
-        /* --- iOS TOGGLE SWITCH --- */
-        .switch-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .switch-label { font-size: 0.8em; color: #64748b; font-weight: bold; text-transform: uppercase; }
-
-        .ios-switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        /* iOS Switch */
+        .ios-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .ios-switch input { opacity: 0; width: 0; height: 0; }
-
-        .ios-slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #e2e8f0; transition: .3s; border-radius: 30px;
-        }
-
-        .ios-slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px;
-            left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+        .ios-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e2e8f0; transition: .3s; border-radius: 20px; }
+        .ios-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .ios-slider { background-color: #10b981; }
-        input:checked + .ios-slider:before { transform: translateX(22px); }
+        input:checked + .ios-slider:before { transform: translateX(20px); }
 
-        /* --- CHART & LOG --- */
-        canvas { background: #f8fafc; border-radius: 10px; margin-top: 10px; border: 1px solid #e2e8f0; width: 100%; height: 220px; }
-        #log-msg { font-size: 0.9em; color: #64748b; text-align: center; margin-top: 10px; min-height: 1.2em; font-weight: 500; }
+        /* Button Design identisch zu Konter-Trend */
+        .btn-start { cursor: pointer; background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 1em; width: 100%; transition: 0.2s; margin-top: 10px; }
+        .btn-start:hover { background: #059669; }
+        .btn-start:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        .btn-start { 
-            background: #0284c7; color: white; border: none; padding: 15px 40px; 
-            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em;
-            transition: 0.2s;
-        }
-        .btn-start:hover { background: #0369a1; }
+        #playerName { padding: 12px; width: 250px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 15px; text-align: center; font-size: 1em; }
 
-        .footer-stats {
-            display: flex;
-            justify-content: space-around;
-            padding-top: 20px; 
-            border-top: 1px solid #f1f5f9; 
-            margin-top: 20px; 
-            color: #64748b; 
-            font-size: 0.9em; 
-            font-weight: bold;
-        }
+        canvas { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 15px; width: 100%; height: 220px; }
+        #log-msg { font-size: 0.85em; color: #64748b; text-align: center; margin-top: 10px; font-weight: bold; }
+
+        .footer-stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.9em; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 15px; }
         .footer-stats b { color: #1e293b; }
     </style>
 </head>
 <body>
 
+<nav>
+    <a href="home.html">🏠 Home</a>
+    <a href="statisch.html">📊 Statisch</a>
+    <a href="trend.html">📈 Trend</a>
+    <a href="konter-trend.html">📉 Konter-Trend</a>
+    <a href="kombiniert.html">🧬 Kombiniert</a>
+</nav>
+
 <div class="container">
-    <div id="setup-screen">
-        <h2>📈 Algo-Trader v3.0</h2>
-        <p>Geben Sie Ihrem Team einen Namen:</p>
+    <div id="setup-screen" style="text-align: center; padding: 40px 0;">
+        <h2>🚀 Finale Challenge: Pro-Terminal</h2>
+        <p>Gib deinem Team einen Namen:</p>
         <input type="text" id="playerName" placeholder="Team Name...">
         <br>
-        <button id="mainStartBtn" class="btn-start" onclick="startTrading()" disabled style="opacity: 0.5; cursor: not-allowed;">
-        🔒 Warte auf Freigabe...
+        <button id="mainStartBtn" class="btn-start" onclick="startTrading()" disabled>
+            🔒 Warte auf Freigabe durch Lehrer...
         </button>
     </div>
 
     <div id="trading-screen" style="display:none;">
         <div class="market-info">
             <div>Aktienkurs <strong id="price">...</strong></div>
-            <div>Depot-Gesamtwert <strong id="total">1000.00</strong></div>
-            <div style="text-align: right;">Team <strong id="player-label" style="color:#64748b; font-size:1.2em;">-</strong></div>
+            <div>Depotwert <strong id="total" style="color: #0284c7;">1000.00</strong></div>
+            <div>Team <strong id="player-label" style="color:#64748b;">-</strong></div>
         </div>
 
         <div class="strategy-grid">
             <div class="rule-card buy">
                 <h4>📈 Trend-Kauf</h4>
-                <div class="input-group">Zeitraum (Ticks): <input type="number" id="t1" value="5"></div>
-                <div class="input-group">Anstieg (> %): <input type="number" id="p1" value="2"></div>
-                <div class="input-group">Menge (Stück): <input type="number" id="a1" value="1"></div>
-                <div class="switch-container">
-                    <span class="switch-label">Autopilot</span>
-                    <label class="ios-switch"><input type="checkbox" id="e1"><span class="ios-slider"></span></label>
-                </div>
+                <div class="input-group">Ticks: <input type="number" id="t1" value="5"></div>
+                <div class="input-group">Anstieg > %: <input type="number" id="p1" value="2"></div>
+                <div class="input-group">Stück: <input type="number" id="a1" value="1"></div>
+                <div class="input-group"><span>Aktiv</span> <label class="ios-switch"><input type="checkbox" id="e1"><span class="ios-slider"></span></label></div>
             </div>
-            
             <div class="rule-card sell">
                 <h4>💰 Take-Profit</h4>
-                <div class="input-group">Zeitraum (Ticks): <input type="number" id="t2" value="10"></div>
-                <div class="input-group">Anstieg (> %): <input type="number" id="p2" value="5"></div>
-                <div class="input-group">Menge (Stück): <input type="number" id="a2" value="1"></div>
-                <div class="switch-container">
-                    <span class="switch-label">Autopilot</span>
-                    <label class="ios-switch"><input type="checkbox" id="e2"><span class="ios-slider"></span></label>
-                </div>
+                <div class="input-group">Ticks: <input type="number" id="t2" value="10"></div>
+                <div class="input-group">Anstieg > %: <input type="number" id="p2" value="5"></div>
+                <div class="input-group">Stück: <input type="number" id="a2" value="1"></div>
+                <div class="input-group"><span>Aktiv</span> <label class="ios-switch"><input type="checkbox" id="e2"><span class="ios-slider"></span></label></div>
             </div>
-
             <div class="rule-card buy">
                 <h4>📉 Dip-Kauf</h4>
-                <div class="input-group">Zeitraum (Ticks): <input type="number" id="t3" value="8"></div>
-                <div class="input-group">Fall (> %): <input type="number" id="p3" value="3"></div>
-                <div class="input-group">Menge (Stück): <input type="number" id="a3" value="1"></div>
-                <div class="switch-container">
-                    <span class="switch-label">Autopilot</span>
-                    <label class="ios-switch"><input type="checkbox" id="e3"><span class="ios-slider"></span></label>
-                </div>
+                <div class="input-group">Ticks: <input type="number" id="t3" value="8"></div>
+                <div class="input-group">Fall > %: <input type="number" id="p3" value="3"></div>
+                <div class="input-group">Stück: <input type="number" id="a3" value="1"></div>
+                <div class="input-group"><span>Aktiv</span> <label class="ios-switch"><input type="checkbox" id="e3"><span class="ios-slider"></span></label></div>
             </div>
-
             <div class="rule-card sell">
                 <h4>🛡️ Stop-Loss</h4>
-                <div class="input-group">Zeitraum (Ticks): <input type="number" id="t4" value="3"></div>
-                <div class="input-group">Fall (> %): <input type="number" id="p4" value="2"></div>
-                <div class="input-group">Menge (Stück): <input type="number" id="a4" value="1"></div>
-                <div class="switch-container">
-                    <span class="switch-label">Autopilot</span>
-                    <label class="ios-switch"><input type="checkbox" id="e4"><span class="ios-slider"></span></label>
-                </div>
+                <div class="input-group">Ticks: <input type="number" id="t4" value="3"></div>
+                <div class="input-group">Fall > %: <input type="number" id="p4" value="2"></div>
+                <div class="input-group">Stück: <input type="number" id="a4" value="1"></div>
+                <div class="input-group"><span>Aktiv</span> <label class="ios-switch"><input type="checkbox" id="e4"><span class="ios-slider"></span></label></div>
             </div>
         </div>
 
@@ -221,47 +116,36 @@
         <div class="footer-stats">
             <span>Cash: <b id="cash">1000.00</b> €</span>
             <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
-            <span>Bestand: <b id="shares">0</b> Stück</span>
+            <span>Besitz: <b id="shares">0</b> Stück</span>
         </div>
     </div>
 </div>
 
 <script>
-    // --- KONFIGURATION (Bitte ausfüllen) ---
     const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
-    
     const tradingDb = supabase.createClient(S_URL, S_KEY);
 
     let price = 100, cash = 1000, shares = 0, history = [], portfolioHistory = [], playerName = "";
 
+    // START-BEDINGUNG: Prüft ob der Lehrer freigeschaltet hat
     async function checkChallengeStatus() {
         try {
             const { data } = await tradingDb.from('market').select('challenge_active').eq('id', 1).single();
-            const startBtn = document.querySelector('.btn-start'); // Der Button im Setup-Screen
-            
+            const btn = document.getElementById('mainStartBtn');
             if (data && data.challenge_active) {
-                // Challenge ist frei
-                startBtn.disabled = false;
-                startBtn.style.opacity = "1";
-                startBtn.innerText = "Börse betreten";
-                startBtn.style.cursor = "pointer";
+                btn.disabled = false;
+                btn.innerText = "🚀 Börse betreten";
+                btn.style.background = "#10b981";
             } else {
-                // Challenge ist noch gesperrt
-                startBtn.disabled = true;
-                startBtn.style.opacity = "0.5";
-                startBtn.innerText = "🔒 Startet in Kürze...";
-                startBtn.style.cursor = "not-allowed";
+                btn.disabled = true;
+                btn.innerText = "🔒 Warte auf Freigabe...";
+                btn.style.background = "#cbd5e1";
             }
-        } catch (e) {
-            console.log("Warte auf Datenbank-Verbindung...");
-        }
+        } catch(e) {}
     }
-    
-    // Alle 3 Sekunden prüfen
-    setInterval(checkChallengeStatus, 3000);
-    checkChallengeStatus();
-        
+    setInterval(checkChallengeStatus, 2000);
+
     async function startTrading() {
         playerName = document.getElementById('playerName').value.trim();
         if(!playerName) return alert("Bitte Teamnamen eingeben!");
@@ -275,16 +159,12 @@
         try {
             const { data } = await tradingDb.from('market').select('price').eq('id', 1).single();
             if (data) {
-                // RESET SIGNAL CHECK
-                if (data.price === -1) {
+                if (data.price === -1) { // RESET SIGNAL
                     cash = 1000; shares = 0; history = []; portfolioHistory = [];
-                    document.getElementById('log-msg').innerText = "♻️ Reset durch Lehrer erfolgt!";
-                    await tradingDb.from('leaderboard').upsert({ name: playerName, score: 1000 });
                     updateUI(1000);
                     setTimeout(runLoop, 1500);
                     return;
                 }
-
                 price = data.price;
                 history.push(price);
                 if(history.length > 50) history.shift();
@@ -298,7 +178,7 @@
                 await tradingDb.from('leaderboard').upsert({ name: playerName, score: totalValue });
                 updateUI(totalValue);
             }
-        } catch (e) { console.error("Sync Error:", e); }
+        } catch (e) { console.error(e); }
         setTimeout(runLoop, 1500);
     }
 
@@ -307,35 +187,21 @@
         let t = parseInt(document.getElementById('t' + id).value);
         let p = parseFloat(document.getElementById('p' + id).value) / 100;
         let amount = parseInt(document.getElementById('a' + id).value);
-
-        if (history.length > t && amount > 0) {
+        if (history.length > t) {
             let oldPrice = history[history.length - 1 - t];
             let change = (price - oldPrice) / oldPrice;
-            let isPositiveRequest = (id === 1 || id === 2);
-            
-            if (isPositiveRequest && change >= p) executeTrade(action, amount);
-            else if (!isPositiveRequest && change <= -p) executeTrade(action, amount);
+            if ((id <= 2 && change >= p) || (id > 2 && change <= -p)) executeTrade(action, amount);
         }
     }
 
     function executeTrade(action, amount) {
         const log = document.getElementById('log-msg');
-        if (action === "BUY") {
-            let cost = amount * price;
-            if (cash >= cost) {
-                cash -= cost; shares += amount;
-                log.innerText = `✅ GEKAUFT: ${amount} Stk à ${price.toFixed(2)}€`;
-            } else {
-                let possible = Math.floor(cash / price);
-                if (possible > 0) { cash -= possible * price; shares += possible; log.innerText = `⚠️ Nur ${possible} Stk gekauft (Budget)`; }
-            }
-        } else if (action === "SELL") {
-            if (shares >= amount) {
-                cash += amount * price; shares -= amount;
-                log.innerText = `💰 VERKAUFT: ${amount} Stk à ${price.toFixed(2)}€`;
-            } else if (shares > 0) {
-                cash += shares * price; log.innerText = `⚠️ Restliche ${shares} Stk verkauft`; shares = 0;
-            }
+        if (action === "BUY" && cash >= amount * price) {
+            cash -= amount * price; shares += amount;
+            log.innerText = `✅ KAUF: ${amount} Stk`;
+        } else if (action === "SELL" && shares >= amount) {
+            cash += amount * price; shares -= amount;
+            log.innerText = `💰 VERKAUF: ${amount} Stk`;
         }
     }
 
@@ -350,77 +216,19 @@
 
     function drawChart() {
         const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth; canvas.height = 240; // Etwas höher für bessere Sichtbarkeit
-        const padding = 50, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
+        canvas.width = canvas.offsetWidth; canvas.height = 220;
+        const padding = 40, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
         ctx.clearRect(0,0,canvas.width, canvas.height);
-        
         if (history.length < 2) return;
-    
-        // --- 1. Skalierung berechnen ---
-        // Linke Achse: Portfolio
-        const minPort = Math.min(...portfolioHistory) * 0.99;
-        const maxPort = Math.max(...portfolioHistory) * 1.01;
-        
-        // Rechte Achse: Aktienpreis
-        const minPrice = Math.min(...history) * 0.98;
-        const maxPrice = Math.max(...history) * 1.02;
-    
+        const minP = Math.min(...history) * 0.98, maxP = Math.max(...history) * 1.02;
+        const minPort = Math.min(...portfolioHistory) * 0.98, maxPort = Math.max(...portfolioHistory) * 1.02;
         const getX = (i) => padding + (i / 49) * w;
+        const getYPrice = (v) => canvas.height - padding - ((v - minP) / (maxP - minP)) * h;
         const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
-        const getYPrice = (v) => canvas.height - padding - ((v - minPrice) / (maxPrice - minPrice)) * h;
-    
-        // --- 2. Achsen & Beschriftung zeichnen ---
-        ctx.strokeStyle = "#e2e8f0"; 
-        ctx.lineWidth = 1;
-        ctx.beginPath(); 
-        ctx.moveTo(padding, padding); ctx.lineTo(padding, canvas.height-padding); // Links
-        ctx.lineTo(canvas.width-padding, canvas.height-padding); // Unten
-        ctx.lineTo(canvas.width-padding, padding); // Rechts
-        ctx.stroke();
-    
-        ctx.font = "bold 10px sans-serif";
-    
-        // Linke Beschriftung (Blau - Portfolio)
-        ctx.fillStyle = "#0284c7";
-        ctx.textAlign = "right";
-        ctx.fillText(maxPort.toFixed(0) + " €", padding - 10, padding + 5);
-        ctx.fillText(minPort.toFixed(0) + " €", padding - 10, canvas.height - padding);
-        ctx.save();
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText("PORTFOLIO (€)", -canvas.height/2, 15);
-        ctx.restore();
-    
-        // Rechte Beschriftung (Grau - Preis)
-        ctx.fillStyle = "#94a3b8";
-        ctx.textAlign = "left";
-        ctx.fillText(maxPrice.toFixed(2) + " €", canvas.width - padding + 10, padding + 5);
-        ctx.fillText(minPrice.toFixed(2) + " €", canvas.width - padding + 10, canvas.height - padding);
-        ctx.save();
-        ctx.rotate(Math.PI / 2);
-        ctx.fillText("AKTIENKURS (€)", canvas.height/2, -(canvas.width - 15));
-        ctx.restore();
-    
-        // X-Achse Beschriftung
-        ctx.fillStyle = "#64748b";
-        ctx.textAlign = "center";
-        ctx.fillText("ZEITVERLAUF (TICKS: Letzte 50 Messpunkte)", canvas.width / 2, canvas.height - 10);
-    
-        // --- 3. Linien zeichnen ---
-        // Aktienkurs (Hintergrund gestrichelt, nutzt rechte Skala)
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = "rgba(10, 95, 45, 0.4)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v)));
-        ctx.stroke();
-        
-        // Portfolio (Vordergrund fett blau, nutzt linke Skala)
-        ctx.setLineDash([]);
-        ctx.strokeStyle = "#0284c7";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v)));
-        ctx.stroke();
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = "#94a3b8"; ctx.beginPath();
+        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v))); ctx.stroke();
+        ctx.setLineDash([]); ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 3; ctx.beginPath();
+        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v))); ctx.stroke();
     }
 </script>
 </body>
