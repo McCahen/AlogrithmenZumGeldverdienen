@@ -233,6 +233,27 @@
 
     let price = 100, cash = 1000, shares = 0, history = [], portfolioHistory = [], playerName = "";
 
+    async function checkChallengeStatus() {
+        const { data } = await tradingDb.from('market').select('challenge_active').eq('id', 1).single();
+        const card = document.querySelector('.challenge-card');
+        
+        if (data && data.challenge_active) {
+            card.style.opacity = "1";
+            card.style.pointerEvents = "auto";
+            card.style.filter = "none";
+            card.querySelector('p').innerText = "Der ultimative Test. Maximiere dein Portfolio!";
+        } else {
+            card.style.opacity = "0.5";
+            card.style.pointerEvents = "none"; // Klick deaktivieren
+            card.style.filter = "grayscale(100%)";
+            card.querySelector('p').innerText = "🔒 Gesperrt. Warten Sie auf das Signal des Lehrers.";
+        }
+    }
+    
+    // Alle 3 Sekunden prüfen
+    setInterval(checkChallengeStatus, 3000);
+    checkChallengeStatus();
+        
     async function startTrading() {
         playerName = document.getElementById('playerName').value.trim();
         if(!playerName) return alert("Bitte Teamnamen eingeben!");
