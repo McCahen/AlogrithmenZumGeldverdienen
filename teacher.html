@@ -2,156 +2,87 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Lehrer-Dashboard | Börsen-Kontrollzentrum</title>
+    <title>🕹️ Markt-Konsole</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; background: #121212; color: #e0e0e0; margin: 0; }
-        .panel { background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h2 { color: #3498db; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        
-        /* Preis-Anzeige */
-        .price-card { background: #252525; padding: 20px; border-radius: 8px; text-align: center; margin: 15px 0; border: 2px solid #444; }
-        .price-display { font-size: 3.5em; font-weight: bold; color: #2ecc71; font-family: monospace; }
-        .trend-label { font-size: 1.2em; color: #bdc3c7; margin-top: 5px; }
-
-        /* Steuerung */
-        .controls button { padding: 12px; width: 100%; margin: 8px 0; cursor: pointer; font-weight: bold; border-radius: 6px; border: none; transition: 0.2s; font-size: 1em; }
-        .btn-bull { background: #27ae60; color: white; }
-        .btn-bull:hover { background: #2ecc71; }
-        .btn-bear { background: #c0392b; color: white; }
-        .btn-bear:hover { background: #e74c3c; }
-        .btn-neutral { background: #7f8c8d; color: white; }
-        .btn-reset { background: #2c3e50; color: #bdc3c7; margin-top: 20px !important; }
-
-        /* Tabelle */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #252525; border-radius: 8px; overflow: hidden; }
-        th { background: #34495e; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #333; font-size: 1.1em; }
-        tr:nth-child(even) { background: #2a2a2a; }
-        tr:first-child td { color: #f1c40f; font-weight: bold; } /* Gold für Platz 1 */
-
-        /* Status-Log */
-        #log { font-family: monospace; font-size: 0.8em; color: #95a5a6; margin-top: 15px; max-height: 100px; overflow-y: auto; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 30px; text-align: center; }
+        .panel { max-width: 500px; margin: auto; background: #262626; padding: 20px; border-radius: 15px; border: 2px solid #444; }
+        .price { font-size: 4em; color: #2ecc71; margin: 20px 0; font-family: monospace; }
+        .controls button { width: 100%; padding: 15px; margin: 10px 0; cursor: pointer; font-weight: bold; border-radius: 8px; border: none; font-size: 1.1em; }
+        .btn-start { background: #27ae60; color: white; }
+        .btn-stop { background: #e67e22; color: white; }
+        .btn-trend { background: #34495e; color: white; border: 1px solid #555; }
+        .active-trend { border: 3px solid #38bdf8 !important; box-shadow: 0 0 10px #38bdf8; }
+        .status { color: #94a3b8; font-style: italic; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2>🎮 Markt-Steuerung</h2>
+    <h2>Markt-Steuerung</h2>
+    <div id="status-label" class="status">Markt ist: ANGEHALTEN</div>
     
-    <div class="price-card">
-        <div class="price-display" id="currentPrice">100.00 €</div>
-        <div id="trendIcon" class="trend-label">↔️ Seitwärts</div>
+    <button id="mainBtn" class="btn-start" onclick="toggleMarket()">▶️ Markt STARTEN</button>
+    
+    <div class="price" id="priceDisplay">100.00 €</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+        <button id="btn-bull" class="btn-trend" onclick="setTrend('bull')">🚀 Bull</button>
+        <button id="btn-sideways" class="btn-trend active-trend" onclick="setTrend('sideways')">↔️ Neutral</button>
+        <button id="btn-bear" class="btn-trend" onclick="setTrend('bear')">📉 Bear</button>
     </div>
 
-    <div class="controls">
-        <button class="btn-bull" onclick="setTrend('bull')">🚀 Bullenmarkt (Aufschwung)</button>
-        <button class="btn-neutral" onclick="setTrend('sideways')">↔️ Seitwärts (Rauschen)</button>
-        <button class="btn-bear" onclick="setTrend('bear')">📉 Crash (Abwärtstrend)</button>
-        
-        <button class="btn-reset" onclick="resetMarket()">♻️ Alles zurücksetzen</button>
-    </div>
-
-    <div id="log">System bereit...</div>
-</div>
-
-<div class="panel">
-    <h2>🏆 Live-Leaderboard (Beamer-Ansicht)</h2>
-    <table id="leaderboard">
-        <thead>
-            <tr>
-                <th>Rang</th>
-                <th>Name / Team</th>
-                <th>Depotwert</th>
-            </tr>
-        </thead>
-        <tbody id="leaderboardBody">
-            </tbody>
-    </table>
+    <button style="background: #c0392b; color: white; margin-top: 30px;" onclick="reset()">♻️ Reset Leaderboard</button>
 </div>
 
 <script>
-    // --- SUPABASE KONFIGURATION ---
-    const SUPABASE_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const S_URL = 'DEINE_URL';
+    const S_KEY = 'DEIN_KEY';
+    const db = supabase.createClient(S_URL, S_KEY);
 
-    let currentPrice = 100.00;
-    let trendMode = 'sideways';
+    let price = 100, trend = 'sideways', isRunning = false, interval = null;
 
-    // 1. HAUPT-LOOP: Generiert alle 1.5 Sek. einen neuen Preis
-    async function marketTick() {
-        let change = (Math.random() - 0.5) * 2; // Normales Rauschen
+    function toggleMarket() {
+        isRunning = !isRunning;
+        const btn = document.getElementById('mainBtn');
+        const status = document.getElementById('status-label');
 
-        if (trendMode === 'bull') change += 1.8;
-        if (trendMode === 'bear') change -= 2.0;
-
-        currentPrice = Math.max(2, +(currentPrice + change).toFixed(2));
-        
-        // UI Update
-        document.getElementById('currentPrice').innerText = currentPrice.toFixed(2) + " €";
-        
-        // Datenbank Update
-        const { error } = await supabaseClient
-            .from('market')
-            .update({ price: currentPrice, trend: trendMode })
-            .eq('id', 1);
-
-        if (error) logError("Markt-Update fehlgeschlagen: " + error.message);
-    }
-
-    // 2. LEADERBOARD-LOOP: Holt alle 2 Sek. die Schüler-Daten
-    async function updateLeaderboard() {
-        const { data, error } = await supabaseClient
-            .from('leaderboard')
-            .select('name, score')
-            .order('score', { ascending: false });
-
-        if (error) {
-            logError("Leaderboard-Fehler: " + error.message);
-            return;
+        if (isRunning) {
+            btn.innerText = "⏸️ Markt STOPPEN";
+            btn.className = "btn-stop";
+            status.innerText = "Markt ist: AKTIV";
+            interval = setInterval(tick, 1500);
+        } else {
+            btn.innerText = "▶️ Markt STARTEN";
+            btn.className = "btn-start";
+            status.innerText = "Markt ist: ANGEHALTEN";
+            clearInterval(interval);
         }
-
-        const tbody = document.getElementById('leaderboardBody');
-        tbody.innerHTML = data.map((row, index) => `
-            <tr>
-                <td>#${index + 1}</td>
-                <td>${row.name}</td>
-                <td>${row.score.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €</td>
-            </tr>
-        `).join('');
     }
 
-    // Tasten-Funktionen
-    function setTrend(mode) {
-        trendMode = mode;
-        const labels = { 'bull': '🚀 Bullenmarkt', 'bear': '📉 Crash', 'sideways': '↔️ Seitwärts' };
-        document.getElementById('trendIcon').innerText = labels[mode];
-        logError("Trend geändert auf: " + mode);
+    async function tick() {
+        let change = (Math.random() - 0.5) * 1.5;
+        if (trend === 'bull') change += 1.4;
+        if (trend === 'bear') change -= 1.6;
+
+        price = Math.max(2, +(price + change).toFixed(2));
+        document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
+
+        await db.from('market').update({ price: price }).eq('id', 1);
     }
 
-    async function resetMarket() {
-        if (!confirm("Wirklich alles zurücksetzen? Alle Schüler-Ergebnisse werden gelöscht!")) return;
-        
-        currentPrice = 100.00;
-        trendMode = 'sideways';
-        
-        // Tabellen leeren
-        await supabaseClient.from('leaderboard').delete().neq('name', 'dummy_val');
-        await supabaseClient.from('market').update({ price: 100.00, trend: 'sideways' }).eq('id', 1);
-        
-        logError("System-Reset durchgeführt.");
+    function setTrend(t) {
+        trend = t;
+        document.querySelectorAll('.btn-trend').forEach(b => b.classList.remove('active-trend'));
+        document.getElementById('btn-' + t).classList.add('active-trend');
     }
 
-    function logError(msg) {
-        const logDiv = document.getElementById('log');
-        logDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}<br>` + logDiv.innerHTML;
+    async function reset() {
+        if(confirm("Alle Schüler-Daten löschen?")) {
+            await db.from('leaderboard').delete().neq('name', '---');
+            location.reload();
+        }
     }
-
-    // Start der Intervalle
-    setInterval(marketTick, 1500);
-    setInterval(updateLeaderboard, 2000);
 </script>
-
 </body>
 </html>
