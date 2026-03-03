@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Algo-Workshop: Trends kontern</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .market-info { display: flex; justify-content: space-between; font-size: 1.2em; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; }
+        .controls { background: #eee; padding: 15px; border-radius: 5px; }
+        button { cursor: pointer; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; }
+        input { padding: 5px; width: 60px; }
+    </style>
+</head>
+<body>
+<nav>
+  <a href="index.html">Home</a>
+  <a href="statisch.html">Statisch</a>
+  <a href="trend.html">Trend</a>
+  <a href="konter-trend.html">Konter-Trend</a>
+  <a href="gewinnmitnahme">Gewinnmitnahme</a>
+  <a href="kombiniert.html">Kombiniert</a>
+</nav>
+<div class="container">
+    <h2>🚀 Kontra-Trend: Gewinn mitnehmen & Dip-Kaufen</h2>
+    
+    <div class="market-info">
+        <div>Aktueller Kurs: <strong id="price">100</strong> €</div>
+        <div>Depotwert: <strong id="total">1000</strong> €</div>
+    </div>
 
+    <div class="controls">
+        <h3>Trend-Strategie:</h3>
+            <p>
+        Beobachte die letzten <input type="number" id="ticks" value="10"> Ticks.<br>
+        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % sinkt: <strong>KAUFEN</strong>.<br>
+        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % steigt: <strong>VERKAUFEN</strong>.
+            </p>
+        <button onclick="toggleSimulation()" id="startBtn">Simulation Starten</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <p>Guthaben: <span id="cash">1000</span> € | Aktien im Besitz: <span id="shares">0</span></p>
+        <canvas id="chart" width="760" height="200" style="border:1px solid #ccc;"></canvas>
+    </div>
+</div>
+
+<script>
+    let price = 100;
+    let cash = 1000;
+    let shares = 0;
+    let isRunning = false;
+    let history = [100];
+
+    function toggleSimulation() {
+        isRunning = !isRunning;
+        document.getElementById('startBtn').innerText = isRunning ? "Stoppen" : "Simulation Starten";
+        if(isRunning) runStep();
+    }
+
+    function runStep() {
+        if(!isRunning) return;
+
+        // 1. Marktbewegung (Zufall)
+        let change = (Math.random() - 0.5) * 4;
+        price = Math.max(10, +(price + change).toFixed(2));
+        history.push(price);
+
+        // 2. Trend-Logik auslesen
+        let lookbackTicks = parseInt(document.getElementById('ticks').value);
+        let percentThreshold = parseFloat(document.getElementById('percent').value) / 100;
+
+        if (history.length > lookbackTicks) {
+            // Vergleichspreis von vor X Ticks holen
+            let oldPrice = history[history.length - 1 - lookbackTicks];
+            let priceChangeRatio = (price - oldPrice) / oldPrice;
+
+            // STRATEGIE: Wenn Kurs um Y% GESTIEGEN ist -> KAUFEN (Trend reiten)
+            if (priceChangeRatio >= percentThreshold && cash >= price) {
+                cash -= price;
+                shares++;
+                console.log("Trend-Kauf bei " + price);
+            } 
+            // STRATEGIE: Wenn Kurs um Y% GEFALLEN ist -> VERKAUFEN (Stop-Loss)
+            else if (priceChangeRatio <= -percentThreshold && shares > 0) {
+                cash += price;
+                shares--;
+                console.log("Trend-Verkauf bei " + price);
+            }
+        }
+
+        updateUI();
+        setTimeout(runStep, 500);
+    }
+</script>
+</body>
+</html>
