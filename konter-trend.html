@@ -4,96 +4,115 @@
     <meta charset="UTF-8">
     <title>Algo-Workshop: Trends kontern</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .market-info { display: flex; justify-content: space-between; font-size: 1.2em; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; }
-        .controls { background: #eee; padding: 15px; border-radius: 5px; }
-        button { cursor: pointer; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; }
-        input { padding: 5px; width: 60px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        nav { margin-bottom: 20px; padding: 10px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        nav a { margin-right: 15px; text-decoration: none; color: #0284c7; font-weight: bold; }
+        .market-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .market-info div { font-size: 0.9em; color: #64748b; text-transform: uppercase; }
+        .market-info strong { display: block; font-size: 1.8em; color: #0f172a; margin-top: 5px; }
+        .controls { background: #f1f5f9; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        button { cursor: pointer; background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 1em; width: 100%; transition: 0.2s; }
+        button:hover { background: #059669; }
+        input { padding: 8px; width: 60px; border-radius: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #0284c7; }
+        canvas { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 15px; width: 100%; }
+        .footer-stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.9em; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .footer-stats b { color: #1e293b; }
     </style>
 </head>
 <body>
-    
+
 <nav>
-  <a href="index.html">Home</a>
-  <a href="statisch.html">Statisch</a>
-  <a href="trend.html">Trend</a>
-  <a href="konter-trend.html">Konter-Trend</a>
-  <a href="kombiniert.html">Kombiniert</a>
-</nav></br>
-    
+    <a href="home.html">🏠 Home</a>
+    <a href="statisch.html">📊 Statisch</a>
+    <a href="trend.html">📈 Trend</a>
+    <a href="konter-trend.html">📉 Konter-Trend</a>
+    <a href="kombiniert.html">🧬 Kombiniert</a>
+</nav>
+
 <div class="container">
     <h2>🚀 Konter-Trend: Gewinn mitnehmen & Dip-Kaufen</h2>
     
     <div class="market-info">
-        <div>Aktueller Kurs: <strong id="price">100</strong> €</div>
-        <div>Depotwert: <strong id="total">1000</strong> €</div>
+        <div>Aktueller Kurs <strong id="price">100.00</strong></div>
+        <div>Depotwert <strong id="total" style="color: #0284c7;">1000.00</strong></div>
     </div>
 
     <div class="controls">
-        <h3>Trend-Strategie:</h3>
-            <p>
-        Beobachte die letzten <input type="number" id="ticks" value="10"> Ticks.<br>
-        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % sinkt: <strong>KAUFEN</strong>.<br>
-        Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % steigt: <strong>VERKAUFEN</strong>.
-            </p>
+        <p>
+            Beobachte die letzten <input type="number" id="ticks" value="10"> Ticks.<br>
+            Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent" value="2"> % sinkt: <strong>KAUFEN</strong>.<br>
+            Wenn der Kurs in dieser Zeit um mehr als <input type="number" id="percent_sell" value="2"> % steigt: <strong>VERKAUFEN</strong>.
+        </p>
         <button onclick="toggleSimulation()" id="startBtn">Simulation Starten</button>
     </div>
 
-    <div style="margin-top: 20px;">
-        <p>Guthaben: <span id="cash">1000</span> € | Aktien im Besitz: <span id="shares">0</span></p>
-        <canvas id="chart" width="760" height="200" style="border:1px solid #ccc;"></canvas>
+    <canvas id="chart"></canvas>
+
+    <div class="footer-stats">
+        <span>Cash: <b id="cash">1000.00</b> €</span>
+        <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
+        <span>Besitz: <b id="shares">0</b> Stück</span>
     </div>
 </div>
 
 <script>
+    // --- VARIABLEN ---
     let price = 100;
     let cash = 1000;
     let shares = 0;
     let isRunning = false;
     let history = [100];
     let portfolioHistory = [1000];
-    
+
+    // --- LOGIK ---
+
     function toggleSimulation() {
         isRunning = !isRunning;
-        document.getElementById('startBtn').innerText = isRunning ? "Stoppen" : "Simulation Starten";
+        document.getElementById('startBtn').innerText = isRunning ? "⏹ Simulation Stoppen" : "▶ Simulation Starten";
+        document.getElementById('startBtn').style.background = isRunning ? "#ef4444" : "#10b981";
         if(isRunning) runStep();
     }
 
     function runStep() {
         if(!isRunning) return;
 
-        // 1. Marktbewegung (Zufall)
+        // 1. Marktbewegung
         let change = (Math.random() - 0.5) * 4;
         price = Math.max(10, +(price + change).toFixed(2));
         history.push(price);
+        if(history.length > 50) history.shift();
 
-        // 2. Trend-Logik auslesen
-        let lookbackTicks = parseInt(document.getElementById('ticks').value);
-        let percentThreshold = parseFloat(document.getElementById('percent').value) / 100;
+        // 2. Portfolio berechnen
+        let currentTotal = cash + (shares * price);
+        portfolioHistory.push(currentTotal);
+        if(portfolioHistory.length > 50) portfolioHistory.shift();
 
-        if (history.length > lookbackTicks) {
-            // Vergleichspreis von vor X Ticks holen
-            let oldPrice = history[history.length - 1 - lookbackTicks];
-            let priceChangeRatio = (price - oldPrice) / oldPrice;
+        // 3. Strategie-Check
+        let t = parseInt(document.getElementById('ticks').value);
+        let p_buy = parseFloat(document.getElementById('percent').value) / 100;
+        let p_sell = parseFloat(document.getElementById('percent_sell').value) / 100;
 
-            // STRATEGIE: Wenn Kurs um Y% GESTIEGEN ist -> KAUFEN (Trend reiten)
-            if (priceChangeRatio >= percentThreshold && cash >= price) {
+        if (history.length > t) {
+            let oldPrice = history[history.length - 1 - t];
+            let ratio = (price - oldPrice) / oldPrice;
+
+            // Konter-Trend: Kaufen bei Kursfall
+            if (ratio <= -p_buy && cash >= price) {
                 cash -= price;
                 shares++;
-                console.log("Trend-Kauf bei " + price);
             } 
-            // STRATEGIE: Wenn Kurs um Y% GEFALLEN ist -> VERKAUFEN (Stop-Loss)
-            else if (priceChangeRatio <= -percentThreshold && shares > 0) {
+            // Konter-Trend: Verkaufen bei Kursanstieg (Gewinnmitnahme)
+            else if (ratio >= p_sell && shares > 0) {
                 cash += price;
                 shares--;
-                console.log("Trend-Verkauf bei " + price);
             }
         }
-        
-    updateUI(total);
-    setTimeout(runStep, 500);
-        
+
+        updateUI(currentTotal);
+        setTimeout(runStep, 500);
+    }
+
     function updateUI(total) {
         document.getElementById('price').innerText = price.toFixed(2) + " €";
         document.getElementById('cash').innerText = cash.toFixed(2);
@@ -105,79 +124,28 @@
 
     function drawChart() {
         const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth; canvas.height = 240; // Etwas höher für bessere Sichtbarkeit
+        canvas.width = canvas.offsetWidth; canvas.height = 240;
         const padding = 50, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
         ctx.clearRect(0,0,canvas.width, canvas.height);
         
-        if (history.length < 2) return;
-    
-        // --- 1. Skalierung berechnen ---
-        // Linke Achse: Portfolio
-        const minPort = Math.min(...portfolioHistory) * 0.99;
-        const maxPort = Math.max(...portfolioHistory) * 1.01;
-        
-        // Rechte Achse: Aktienpreis
-        const minPrice = Math.min(...history) * 0.98;
-        const maxPrice = Math.max(...history) * 1.02;
-    
-        const getX = (i) => padding + (i / 49) * w;
-        const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
-        const getYPrice = (v) => canvas.height - padding - ((v - minPrice) / (maxPrice - minPrice)) * h;
-    
-        // --- 2. Achsen & Beschriftung zeichnen ---
-        ctx.strokeStyle = "#e2e8f0"; 
-        ctx.lineWidth = 1;
-        ctx.beginPath(); 
-        ctx.moveTo(padding, padding); ctx.lineTo(padding, canvas.height-padding); // Links
-        ctx.lineTo(canvas.width-padding, canvas.height-padding); // Unten
-        ctx.lineTo(canvas.width-padding, padding); // Rechts
-        ctx.stroke();
-    
-        ctx.font = "bold 10px sans-serif";
-    
-        // Linke Beschriftung (Blau - Portfolio)
-        ctx.fillStyle = "#0284c7";
-        ctx.textAlign = "right";
-        ctx.fillText(maxPort.toFixed(0) + " €", padding - 10, padding + 5);
-        ctx.fillText(minPort.toFixed(0) + " €", padding - 10, canvas.height - padding);
-        ctx.save();
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText("PORTFOLIO (€)", -canvas.height/2, 15);
-        ctx.restore();
-    
-        // Rechte Beschriftung (Grau - Preis)
-        ctx.fillStyle = "#94a3b8";
-        ctx.textAlign = "left";
-        ctx.fillText(maxPrice.toFixed(2) + " €", canvas.width - padding + 10, padding + 5);
-        ctx.fillText(minPrice.toFixed(2) + " €", canvas.width - padding + 10, canvas.height - padding);
-        ctx.save();
-        ctx.rotate(Math.PI / 2);
-        ctx.fillText("AKTIENKURS (€)", canvas.height/2, -(canvas.width - 15));
-        ctx.restore();
-    
-        // X-Achse Beschriftung
-        ctx.fillStyle = "#64748b";
-        ctx.textAlign = "center";
-        ctx.fillText("ZEITVERLAUF (TICKS: Letzte 50 Messpunkte)", canvas.width / 2, canvas.height - 10);
-    
-        // --- 3. Linien zeichnen ---
-        // Aktienkurs (Hintergrund gestrichelt, nutzt rechte Skala)
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = "rgba(10, 95, 45, 0.4)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v)));
-        ctx.stroke();
-        
-        // Portfolio (Vordergrund fett blau, nutzt linke Skala)
-        ctx.setLineDash([]);
-        ctx.strokeStyle = "#0284c7";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v)));
-        ctx.stroke();
-    }
+        const minP = Math.min(...history) * 0.98, maxP = Math.max(...history) * 1.02;
+        const minPort = Math.min(...portfolioHistory) * 0.98, maxPort = Math.max(...portfolioHistory) * 1.02;
 
+        const getX = (i) => padding + (i / 49) * w;
+        const getYPrice = (v) => canvas.height - padding - ((v - minP) / (maxP - minP)) * h;
+        const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
+
+        // Achsen
+        ctx.strokeStyle = "#e2e8f0"; ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, canvas.height-padding); ctx.lineTo(canvas.width-padding, canvas.height-padding); ctx.stroke();
+        
+        // Preis (Grau gestrichelt)
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = "#94a3b8"; ctx.beginPath();
+        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v))); ctx.stroke();
+
+        // Portfolio (Blau fett)
+        ctx.setLineDash([]); ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 3; ctx.beginPath();
+        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v))); ctx.stroke();
+    }
 </script>
 </body>
 </html>
