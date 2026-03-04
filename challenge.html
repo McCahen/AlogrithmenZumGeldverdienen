@@ -163,25 +163,47 @@
 
     async function runLoop() {
         try {
-            const { data } = await tradingDb.from('market').select('price').eq('id', 1).single();
-            if (data) {
-                if (data.price === -1) { 
-                    cash = 1000; shares = 0; history = []; portfolioHistory = [];
-                    updateUI(1000);
-                    setTimeout(runLoop, 1500);
-                    return;
-                }
+            const { data, error } = await tradingDb.from('market').select('price').eq('id', 1).single();
+            
+            if (error) throw error;
+    
+            // WICHTIG: Nur fortfahren, wenn der Preis eine echte, positive Zahl ist
+            if (data && data.price > 0) { 
                 price = data.price;
                 history.push(price);
                 if(history.length > 50) history.shift();
-                checkRule(1, "BUY"); checkRule(2, "SELL"); checkRule(3, "BUY"); checkRule(4, "SELL");
+    
+                // Handelsregeln ausführen
+                checkRule(1, "BUY"); checkRule(2, "SELL"); 
+                checkRule(3, "BUY"); checkRule(4, "SELL");
+    
+                // Gesamtwert berechnen
                 let totalValue = +(cash + shares * price).toFixed(2);
                 portfolioHistory.push(totalValue);
                 if(portfolioHistory.length > 50) portfolioHistory.shift();
-                await tradingDb.from('leaderboard').upsert({ name: playerName, score: totalValue });
+    
+                // NUR SENDEN, WENN EIN NAME EXISTIERT
+                if (playerName) {
+                    const { error: upsertError } = await tradingDb
+                        .from('leaderboard')
+                        .upsert({ name: playerName, score: totalValue }, { onConflict: 'name' }); // 'onConflict' stellt sicher, dass überschrieben wird
+                    
+                    if (upsertError) console.error("Leaderboard Update Fehler:", upsertError.message);
+                }
+    
                 updateUI(totalValue);
+            } else if (data && data.price === -1) {
+                // Dies ist der ABSICHTLICHE Reset durch den Lehrer-Button ganz unten
+                console.log("Admin-Reset erkannt. Setze Konto zurück.");
+                cash = 1000;
+                shares = 0;
+                history = [];
+                portfolioHistory = [];
+                updateUI(1000);
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error("Loop Error:", e); 
+        }
         setTimeout(runLoop, 1500);
     }
 
