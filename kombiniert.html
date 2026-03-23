@@ -33,8 +33,8 @@
     <h2>🧬 Kombinations-Modell</h2>
     
     <div class="market-info">
-        <div>Aktueller Kurs: <strong id="price">100.00 €</strong></div>
-        <div>Depotwert: <strong id="total" style="color: #006b4d;">1000.00 €</strong></div>
+        <div>Aktueller Kurs: <strong id="price">100.00 CHF</strong></div>
+        <div>Depotwert: <strong id="total" style="color: #006b4d;">1000.00 CHF</strong></div>
     </div>
 
     <canvas id="chart"></canvas>
@@ -95,8 +95,8 @@
     </div>
 
     <div class="footer-stats">
-        <span>Cash: <b id="cash">1000.00</b> €</span>
-        <span>Wert der Aktien: <b id="sharesValue">0.00</b> €</span>
+        <span>Cash: <b id="cash">1000.00</b> CHF</span>
+        <span>Wert der Aktien: <b id="sharesValue">0.00</b> CHF</span>
         <span>Bestand: <b id="shares">0</b> Stk.</span>
     </div>
 </div>
@@ -159,11 +159,11 @@
     }
 
     function updateUI(total) {
-        document.getElementById('price').innerText = price.toFixed(2) + " €";
+        document.getElementById('price').innerText = price.toFixed(2) + " CHF";
         document.getElementById('cash').innerText = cash.toFixed(2);
         document.getElementById('shares').innerText = shares;
         document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
-        document.getElementById('total').innerText = total.toFixed(2) + " €";
+        document.getElementById('total').innerText = total.toFixed(2) + " CHF";
         drawChart(); // Nutzt die externe Funktion aus charts.js
     }
 
