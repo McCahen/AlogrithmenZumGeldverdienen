@@ -103,7 +103,7 @@
         if(!isRunning) return;
 
         // 1. Marktbewegung (simuliert)
-        let volatilityFactor = 0.05; 
+        let volatilityFactor = 0.1; 
         let change = price * (Math.random() - 0.5) * volatilityFactor;
         price = Math.max(10, +(price + change).toFixed(2));
         history.push(price);
