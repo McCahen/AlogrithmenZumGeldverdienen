@@ -2,198 +2,165 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>HSG Algo-Trader: Final Challenge</title>
+    <title>HSG Workshop: Kombiniert</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="charts.js"></script>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container">
-            <a href="home.html">
-                <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo">
-            </a>
-        </div>
-        <nav>
-            <a href="statisch.html">Statisch</a>
-            <a href="trend.html">Trend</a>
-            <a href="konter-trend.html">Konter-Trend</a>
-            <a href="kombiniert.html" class="active">Kombiniert</a>
-            <a href="challenge.html">Final Challenge</a>
-        </nav>
-    </header>
+<header>
+    <div class="logo-container">
+        <a href="home.html">
+            <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo">
+        </a>
+    </div>
+    <nav>
+        <a href="statisch.html">Statisch</a>
+        <a href="trend.html">Trend</a>
+        <a href="konter-trend.html">Konter-Trend</a>
+        <a href="kombiniert.html" class="active">Kombiniert</a>
+    </nav>
+</header>
 
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>🏆 Final Challenge: Live-Markt</h2>
-            <div id="status-info" style="font-size: 0.8em; color: #64748b; font-weight: bold;">
-                <span id="status-dot"></span> SERVER VERBUNDEN
+<div class="container">
+    <h2>🧬 Kombinations-Modell</h2>
+    
+    <div class="market-info">
+        <div>Aktienkurs <strong id="price">100.00 €</strong></div>
+        <div>Depot-Gesamtwert <strong id="total" style="color: #006b4d;">1000.00 €</strong></div>
+    </div>
+
+    <canvas id="chart"></canvas>
+
+    <div class="strategy-grid">
+        <div class="rule-card buy">
+            <div class="switch-header">
+                <h4>📈 Trend-Kauf</h4>
+                <label class="ios-switch">
+                    <input type="checkbox" id="e1" checked>
+                    <span class="ios-slider"></span>
+                </label>
             </div>
-        </div>
-
-        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px;">
-            <span style="font-weight: bold;">Team Name:</span>
-            <input type="text" id="playerName" placeholder="z.B. Team Alpha" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-        </div>
-
-        <div class="market-info">
-            <div>Live-Kurs <strong id="price">Warten...</strong></div>
-            <div>Dein Score <strong id="total" style="color: #006b4d;">1000.00 €</strong></div>
-        </div>
-
-        <div class="strategy-grid">
-            <div class="rule-card buy">
-                <div class="switch-header">
-                    <h4>📈 Trend-Kauf</h4>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="e1" checked>
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
-                <div class="input-group"><span>Ticks:</span> <input type="number" id="t1" value="5"></div>
-                <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="1.5"></div>
-            </div>
-
-            <div class="rule-card sell">
-                <div class="switch-header">
-                    <h4>💰 Gewinnmitnahme</h4>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="e2">
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
-                <div class="input-group"><span>Ticks:</span> <input type="number" id="t2" value="10"></div>
-                <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="4"></div>
-            </div>
-
-            <div class="rule-card buy">
-                <div class="switch-header">
-                    <h4>📉 Dip-Kauf</h4>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="e3">
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
-                <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="8"></div>
-                <div class="input-group"><span>Fall > %:</span> <input type="number" id="p3" value="2.5"></div>
-            </div>
-
-            <div class="rule-card sell">
-                <div class="switch-header">
-                    <h4>🛡️ Stop-Loss</h4>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="e4" checked>
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
-                <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
-                <div class="input-group"><span>Fall > %:</span> <input type="number" id="p4" value="2"></div>
-            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t1" value="5"></div>
+            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="2"></div>
         </div>
 
-        <button onclick="toggleSimulation()" id="startBtn" class="btn-start">▶ Trading Bot Starten</button>
+        <div class="rule-card sell">
+            <div class="switch-header">
+                <h4>💰 Gewinnmitnahme</h4>
+                <label class="ios-switch">
+                    <input type="checkbox" id="e2">
+                    <span class="ios-slider"></span>
+                </label>
+            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t2" value="10"></div>
+            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="5"></div>
+        </div>
 
-        <canvas id="chart"></canvas>
+        <div class="rule-card buy">
+            <div class="switch-header">
+                <h4>📉 Dip-Kauf</h4>
+                <label class="ios-switch">
+                    <input type="checkbox" id="e3">
+                    <span class="ios-slider"></span>
+                </label>
+            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="8"></div>
+            <div class="input-group"><span>Fall > %:</span> <input type="number" id="p3" value="3"></div>
+        </div>
 
-        <div class="footer-stats">
-            <span>Cash: <b id="cash">1000.00</b> €</span>
-            <span>Bestand: <b id="shares">0</b> Stk.</span>
-            <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
+        <div class="rule-card sell">
+            <div class="switch-header">
+                <h4>🛡️ Stop-Loss</h4>
+                <label class="ios-switch">
+                    <input type="checkbox" id="e4" checked>
+                    <span class="ios-slider"></span>
+                </label>
+            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
+            <div class="input-group"><span>Fall > %:</span> <input type="number" id="p4" value="2"></div>
         </div>
     </div>
 
-    <script>
-        // --- SETUP ---
-        const S_URL = 'DEINE_SUPABASE_URL';
-        const S_KEY = 'DEIN_SUPABASE_KEY';
-        const db = supabase.createClient(S_URL, S_KEY);
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="toggleSimulation()" id="startBtn" class="btn-start">▶ Simulation Starten</button>
+    </div>
 
-        let price = 100, cash = 1000, shares = 0, isRunning = false;
-        let history = [], portfolioHistory = [];
-        let playerName = "";
+    <div class="footer-stats">
+        <span>Cash: <b id="cash">1000.00</b> €</span>
+        <span>Bestand: <b id="shares">0</b> Stk.</span>
+        <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
+    </div>
+</div>
 
-        // --- SIMULATION CONTROL ---
-        function toggleSimulation() {
-            isRunning = !isRunning;
-            const btn = document.getElementById('startBtn');
-            
-            if (isRunning) {
-                btn.innerText = "⏹ Simulation Stoppen";
-                btn.classList.add('running'); // CSS macht ihn rot
-                runStep();
-            } else {
-                btn.innerText = "▶ Simulation Starten";
-                btn.classList.remove('running'); // CSS macht ihn wieder grün
-            }
+<script>
+    let price = 100, cash = 1000, shares = 0, isRunning = false;
+    let history = [100], portfolioHistory = [1000];
+
+    function toggleSimulation() {
+        isRunning = !isRunning;
+        const btn = document.getElementById('startBtn');
+        if (isRunning) {
+            btn.innerText = "⏹ Simulation Stoppen";
+            btn.classList.add('running');
+            runStep();
+        } else {
+            btn.innerText = "▶ Simulation Starten";
+            btn.classList.remove('running');
         }
+    }
 
-        // --- MAIN LOOP (LIVE DATEN) ---
-        async function runLoop() {
-            if(!isRunning) return;
+    function runStep() {
+        if(!isRunning) return;
 
-            try {
-                // Preis vom Lehrer-Portal holen
-                const { data, error } = await db.from('market').select('price').eq('id', 1).single();
-                
-                if (data && data.price > 0) {
-                    price = data.price;
-                    history.push(price);
-                    if(history.length > 50) history.shift();
-                    document.getElementById('status-dot').style.background = "#22c55e";
+        // Marktbewegung
+        price = +(price * (1 + (Math.random() - 0.48) * 0.02)).toFixed(2);
+        history.push(price);
+        if(history.length > 50) history.shift();
 
-                    // Regeln prüfen
-                    checkRule(1, "BUY", true); checkRule(2, "SELL", true);
-                    checkRule(3, "BUY", false); checkRule(4, "SELL", false);
+        // Alle 4 Regeln prüfen
+        checkRule(1, "BUY", true);  
+        checkRule(2, "SELL", true); 
+        checkRule(3, "BUY", false); 
+        checkRule(4, "SELL", false);
 
-                    let totalValue = +(cash + shares * price).toFixed(2);
-                    portfolioHistory.push(totalValue);
-                    if(portfolioHistory.length > 50) portfolioHistory.shift();
+        let total = +(cash + shares * price).toFixed(2);
+        portfolioHistory.push(total);
+        if(portfolioHistory.length > 50) portfolioHistory.shift();
 
-                    // Scoreboard-Update
-                    await db.from('leaderboard').upsert({ name: playerName, score: totalValue });
-                    
-                    updateUI(totalValue);
-                } else if (data && data.price === -1) {
-                    // RESET SIGNAL VOM LEHRER
-                    cash = 1000; shares = 0; history = []; portfolioHistory = [];
-                }
-            } catch (e) {
-                console.error("Verbindungsfehler:", e);
-                document.getElementById('status-dot').style.background = "red";
-            }
+        updateUI(total);
+        setTimeout(runStep, 600);
+    }
 
-            setTimeout(runLoop, 1500);
+    function checkRule(id, action, positiveDirection) {
+        if (!document.getElementById('e' + id).checked) return;
+        let t = parseInt(document.getElementById('t' + id).value);
+        let p = parseFloat(document.getElementById('p' + id).value) / 100;
+
+        if (history.length > t) {
+            let oldPrice = history[history.length - 1 - t];
+            let change = (price - oldPrice) / oldPrice;
+            if (positiveDirection && change >= p) executeTrade(action);
+            else if (!positiveDirection && change <= -p) executeTrade(action);
         }
+    }
 
-        function checkRule(id, action, positiveDirection) {
-            if (!document.getElementById('e' + id).checked) return;
-            let t = parseInt(document.getElementById('t' + id).value);
-            let p = parseFloat(document.getElementById('p' + id).value) / 100;
+    function executeTrade(action) {
+        if (action === "BUY" && cash >= price) { cash -= price; shares++; }
+        else if (action === "SELL" && shares > 0) { cash += price; shares--; }
+    }
 
-            if (history.length > t) {
-                let oldPrice = history[history.length - 1 - t];
-                let change = (price - oldPrice) / oldPrice;
-                if (positiveDirection && change >= p) executeTrade(action);
-                else if (!positiveDirection && change <= -p) executeTrade(action);
-            }
-        }
+    function updateUI(total) {
+        document.getElementById('price').innerText = price.toFixed(2) + " €";
+        document.getElementById('cash').innerText = cash.toFixed(2);
+        document.getElementById('shares').innerText = shares;
+        document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
+        document.getElementById('total').innerText = total.toFixed(2) + " €";
+        drawChart(); // Ruft die Funktion aus charts.js auf
+    }
 
-        function executeTrade(action) {
-            if (action === "BUY" && cash >= price) { cash -= price; shares++; }
-            else if (action === "SELL" && shares > 0) { cash += price; shares--; }
-        }
-
-        function updateUI(total) {
-            document.getElementById('price').innerText = price.toFixed(2) + " €";
-            document.getElementById('cash').innerText = cash.toFixed(2);
-            document.getElementById('shares').innerText = shares;
-            document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
-            document.getElementById('total').innerText = total.toFixed(2) + " €";
-            drawChart();
-        }
-
-
-    </script>
+    // Sofort beim Laden aufrufen, um das leere Gitter zu zeigen
+    drawChart();
+</script>
 </body>
 </html>
