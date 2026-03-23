@@ -2,40 +2,52 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>HSG Algo-Trader: Kombiniert</title>
+    <title>HSG Algo-Trader: Pro-Kombination</title>
     <link rel="stylesheet" href="style.css">
     <script src="charts.js"></script>
+    <style>
+        /* Optimiertes Grid für 6 Karten auf dem Beamer/Monitor */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .rule-card { border-radius: 10px; padding: 15px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .rule-card.buy { border-left: 5px solid #22c55e; }
+        .rule-card.sell { border-left: 5px solid #ef4444; }
+        .rule-card.allin { border-left: 5px solid #006b4d; background: #f0fdf4; }
+        
+        .card-tag { 
+            font-size: 0.65em; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            margin-bottom: 8px; 
+            display: inline-block;
+        }
+        .tag-single { background: #e2e8f0; color: #475569; }
+        .tag-allin { background: #006b4d; color: white; }
+    </style>
 </head> 
 
 <body>
     <header>
         <div class="logo-container">
-            <a href="home.html">
-                <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo">
-            </a>
+            <a href="home.html"><img src="HSG_Logo_DE_RGB.png" alt="HSG Logo"></a>
         </div>
-        <button class="menu-toggle" onclick="toggleMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    
         <nav id="main-nav">
-            <a href="statisch.html">Statisch</a>
-            <a href="trend.html">Trend</a>
-            <a href="konter-trend.html">Konter-Trend</a>
-            <a href="allin.html">All-in</a>
-            <a href="kombiniert.html" class="active">Kombiniert</a>
-            <a href="challenge.html">Final Challenge</a>
+            <a href="kombiniert.html" class="active">Kombiniert Pro</a>
         </nav>
     </header>
 
 <div class="container">
-    <h2>🧬 Kombinations-Modell</h2>
+    <h2>🧬 Strategie-Cockpit (6 Module)</h2>
     
     <div class="market-info">
-        <div>Aktueller Kurs: <strong id="price">100.00 CHF</strong></div>
-        <div>Depotwert: <strong id="total" style="color: #006b4d;">1000.00 CHF</strong></div>
+        <div>Kurs: <strong id="price">100.00</strong></div>
+        <div>Depot: <strong id="total" style="color: #006b4d;">1000.00</strong></div>
     </div>
 
     <canvas id="chart"></canvas>
@@ -43,61 +55,73 @@
     <div class="strategy-grid">
         
         <div class="rule-card buy">
+            <span class="card-tag tag-single">Einzel-Trade</span>
             <div class="switch-header">
                 <h4>📈 Trend-Kauf</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e1" checked>
-                    <span class="ios-slider"></span>
-                </label>
+                <label class="ios-switch"><input type="checkbox" id="e1" checked><span class="ios-slider"></span></label>
             </div>
             <div class="input-group"><span>Ticks:</span> <input type="number" id="t1" value="5"></div>
-            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="2"></div>
+            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="2.0"></div>
         </div>
 
         <div class="rule-card sell">
+            <span class="card-tag tag-single">Einzel-Trade</span>
             <div class="switch-header">
-                <h4>💰 Gewinnmitnahme</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e2">
-                    <span class="ios-slider"></span>
-                </label>
+                <h4>💰 Teil-Verkauf</h4>
+                <label class="ios-switch"><input type="checkbox" id="e2"><span class="ios-slider"></span></label>
             </div>
             <div class="input-group"><span>Ticks:</span> <input type="number" id="t2" value="10"></div>
-            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="5"></div>
+            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="5.0"></div>
+        </div>
+
+        <div class="rule-card buy allin">
+            <span class="card-tag tag-allin">🚀 ALL-IN</span>
+            <div class="switch-header">
+                <h4>🚀 Momentum-Entry</h4>
+                <label class="ios-switch"><input type="checkbox" id="e3"><span class="ios-slider"></span></label>
+            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="3"></div>
+            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p3" value="1.5"></div>
+        </div>
+
+        <div class="rule-card sell allin">
+            <span class="card-tag tag-allin">🚀 ALL-IN</span>
+            <div class="switch-header">
+                <h4>🛑 Not-Aus (Exit)</h4>
+                <label class="ios-switch"><input type="checkbox" id="e4" checked><span class="ios-slider"></span></label>
+            </div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
+            <div class="input-group"><span>Abstieg > %:</span> <input type="number" id="p4" value="2.5"></div>
         </div>
 
         <div class="rule-card buy">
+            <span class="card-tag tag-single">Einzel-Trade</span>
             <div class="switch-header">
-                <h4>📉 Tief einkaufen</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e3">
-                    <span class="ios-slider"></span>
-                </label>
+                <h4>📉 Dip-Buying</h4>
+                <label class="ios-switch"><input type="checkbox" id="e5"><span class="ios-slider"></span></label>
             </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="8"></div>
-            <div class="input-group"><span>Abstieg > %:</span> <input type="number" id="p3" value="3"></div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t5" value="8"></div>
+            <div class="input-group"><span>Abstieg > %:</span> <input type="number" id="p5" value="3.0"></div>
         </div>
 
         <div class="rule-card sell">
+            <span class="card-tag tag-single">Einzel-Trade</span>
             <div class="switch-header">
-                <h4>🛡️ Risiko-Abbauen</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e4" checked>
-                    <span class="ios-slider"></span>
-                </label>
+                <h4>🛡️ Risiko-Schutz</h4>
+                <label class="ios-switch"><input type="checkbox" id="e6" checked><span class="ios-slider"></span></label>
             </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
-            <div class="input-group"><span>Abstieg > %:</span> <input type="number" id="p4" value="2"></div>
+            <div class="input-group"><span>Ticks:</span> <input type="number" id="t6" value="5"></div>
+            <div class="input-group"><span>Abstieg > %:</span> <input type="number" id="p6" value="1.0"></div>
         </div>
+
     </div>
 
-    <div style="text-align: center; margin-top: 20px;">
+    <div style="text-align: center; margin-top: 25px;">
         <button onclick="toggleSimulation()" id="startBtn" class="btn-start">▶ Simulation Starten</button>
     </div>
 
     <div class="footer-stats">
-        <span>Cash: <b id="cash">1000.00</b> CHF</span>
-        <span>Wert der Aktien: <b id="sharesValue">0.00</b> CHF</span>
+        <span>Cash: <b id="cash">1000.00</b></span>
         <span>Bestand: <b id="shares">0</b> Stk.</span>
     </div>
 </div>
@@ -106,21 +130,15 @@
     let price = 100, cash = 1000, shares = 0, isRunning = false;
     let history = [100], portfolioHistory = [1000];
 
-    // --- NAVIGATION FIX (Hinzugefügt) ---
-    function toggleMenu() {
-        const nav = document.getElementById('main-nav');
-        nav.classList.toggle('active');
-    }
-    
     function toggleSimulation() {
         isRunning = !isRunning;
         const btn = document.getElementById('startBtn');
         if (isRunning) {
-            btn.innerText = "⏹ Simulation Stoppen";
+            btn.innerText = "⏹ Stopp";
             btn.classList.add('running');
             runStep();
         } else {
-            btn.innerText = "▶ Simulation Starten";
+            btn.innerText = "▶ Start";
             btn.classList.remove('running');
         }
     }
@@ -129,15 +147,18 @@
         if(!isRunning) return;
 
         // Marktbewegung
-        price = +(price * (1 + (Math.random() - 0.48) * 0.02)).toFixed(2);
+        price = +(price * (1 + (Math.random() - 0.5) * 0.03)).toFixed(2);
         history.push(price);
-        if(history.length > 50) history.shift();
+        if(history.length > 100) history.shift();
 
-        // Alle 4 Regeln prüfen
-        checkRule(1, "BUY", true);  
-        checkRule(2, "SELL", true); 
-        checkRule(3, "BUY", false); 
-        checkRule(4, "SELL", false);
+        // Prüfung der 6 Regeln
+        // Parameter: ID, Aktion, Richtung (true=Aufwärts, false=Abwärts), isAllIn
+        checkRule(1, "BUY",  true,  false); // Einzel Trend-Kauf
+        checkRule(2, "SELL", true,  false); // Einzel Gewinnmitnahme
+        checkRule(3, "BUY",  true,  true);  // All-In Momentum Entry
+        checkRule(4, "SELL", false, true);  // All-In Not-Aus
+        checkRule(5, "BUY",  false, false); // Einzel Dip-Buying
+        checkRule(6, "SELL", false, false); // Einzel Risiko-Stop
 
         let total = +(cash + shares * price).toFixed(2);
         portfolioHistory.push(total);
@@ -147,36 +168,46 @@
         setTimeout(runStep, 600);
     }
 
-    function checkRule(id, action, positiveDirection) {
-        // Sicherstellen, dass das Element existiert, bevor wir .checked prüfen
+    function checkRule(id, action, positiveDir, isAllIn) {
         const toggle = document.getElementById('e' + id);
-        if (!toggle || !toggle.checked) return;        let t = parseInt(document.getElementById('t' + id).value);
+        if (!toggle || !toggle.checked) return;
+
+        let t = parseInt(document.getElementById('t' + id).value);
         let p = parseFloat(document.getElementById('p' + id).value) / 100;
 
         if (history.length > t) {
             let oldPrice = history[history.length - 1 - t];
             let change = (price - oldPrice) / oldPrice;
-            if (positiveDirection && change >= p) executeTrade(action);
-            else if (!positiveDirection && change <= -p) executeTrade(action);
+
+            if (positiveDir && change >= p) executeTrade(action, isAllIn);
+            else if (!positiveDir && change <= -p) executeTrade(action, isAllIn);
         }
     }
 
-    function executeTrade(action) {
-        if (action === "BUY" && cash >= price) { cash -= price; shares++; }
-        else if (action === "SELL" && shares > 0) { cash += price; shares--; }
+    function executeTrade(action, isAllIn) {
+        if (action === "BUY" && cash >= price) {
+            let amount = isAllIn ? Math.floor(cash / price) : 1;
+            if (amount > 0) {
+                cash -= (amount * price);
+                shares += amount;
+            }
+        } 
+        else if (action === "SELL" && shares > 0) {
+            let amount = isAllIn ? shares : 1;
+            cash += (amount * price);
+            shares -= amount;
+        }
     }
 
     function updateUI(total) {
         document.getElementById('price').innerText = price.toFixed(2) + " CHF";
         document.getElementById('cash').innerText = cash.toFixed(2);
         document.getElementById('shares').innerText = shares;
-        document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
         document.getElementById('total').innerText = total.toFixed(2) + " CHF";
-        drawChart(); // Nutzt die externe Funktion aus charts.js
+        if (typeof drawChart === "function") drawChart();
     }
 
-    // Sofort beim Laden aufrufen für das leere Gitter
-    drawChart();
+    window.onload = () => { drawChart(); };
 </script>
 </body>
 </html>
