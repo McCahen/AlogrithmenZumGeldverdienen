@@ -15,21 +15,47 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
 }
 
-/* --- NAVIGATION --- */
-nav { 
-    margin-bottom: 20px; 
-    padding: 10px; 
-    background: #fff; 
-    border-radius: 8px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-    text-align: center; 
+/* --- HEADER & NAVIGATION NEU --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 30px;
 }
 
-nav a { 
-    margin-right: 15px; 
-    text-decoration: none; 
-    color: #0284c7; 
-    font-weight: bold; 
+.logo-container img {
+    height: 50px; /* Adjust size to your needs */
+    display: block;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+nav a {
+    text-decoration: none;
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 0.95em;
+    padding: 5px 0;
+    transition: border-bottom 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+nav a:hover {
+    color: #006b4d; /* HSG-Grün-Ton */
+    border-bottom: 2px solid #006b4d;
+}
+
+/* Aktive Seite markieren */
+nav a.active {
+    color: #006b4d;
+    font-weight: bold;
 }
 
 /* --- MARKT INFO & CARDS --- */
