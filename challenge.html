@@ -48,9 +48,9 @@
     <div id="trading-screen" style="display: none;">
         <h2>🏆 Challenge: Wer gewinnt?</h2>
         <div class="market-info">
-            <div>Aktienkurs <strong id="price">...</strong></div>
-            <div>Depotwert <strong id="total" style="color: #0284c7;">1000.00</strong></div>
-            <div>Team <strong id="player-label" style="color:#64748b;">-</strong></div>
+            <div>Aktueller Kurs: <strong id="price">...</strong></div>
+            <div>Depotwert: <strong id="total" style="color: #0284c7;">1000.00</strong></div>
+            <div>Name: <strong id="player-label" style="color:#64748b;">-</strong></div>
         </div>
 
         <div class="strategy-grid">
@@ -88,8 +88,8 @@
         <div id="log-msg">Warte auf Marktdaten...</div>
 
         <div class="footer-stats">
-            <span>Cash: <b id="cash">1000.00</b> €</span>
-            <span>Wert der Aktien: <b id="sharesValue">0.00</b> €</span>
+            <span>Cash: <b id="cash">1000.00</b> CHF</span>
+            <span>Wert der Aktien: <b id="sharesValue">0.00</b> CHF</span>
             <span>Besitz: <b id="shares">0</b> Stück</span>
         </div>
     </div>
@@ -216,11 +216,11 @@
     }
 
     function updateUI(total) {
-        document.getElementById('price').innerText = price.toFixed(2) + " €";
+        document.getElementById('price').innerText = price.toFixed(2) + " CHF";
         document.getElementById('cash').innerText = cash.toFixed(2);
         document.getElementById('shares').innerText = shares;
         document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
-        document.getElementById('total').innerText = total.toFixed(2) + " €";
+        document.getElementById('total').innerText = total.toFixed(2) + " CHF";
         drawChart();
     }
 
