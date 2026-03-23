@@ -2,151 +2,133 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>🕹️ Markt-Konsole Pro | Lehrer-Ansicht</title>
+    <title>🕹️ Markt-Konsole Pro | Live-Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Spezifische Ergänzungen für die Lehrer-Konsole, falls nicht in style.css */
-        .price-large { font-size: 3em; font-weight: bold; color: #006b4d; margin: 20px 0; }
-        .trend-active { background-color: #006b4d !important; color: white !important; border-color: #004d37 !important; }
-        .spike-up { border-left: 5px solid #22c55e !important; }
-        .spike-down { border-left: 5px solid #ef4444 !important; }
-        .reset-zone { margin-top: 40px; padding-top: 20px; border-top: 2px dashed #e2e8f0; }
+    <script src="charts.js"></script> <style>
+        .admin-container { max-width: 1200px; margin: 0 auto; padding: 10px 20px; }
+        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr 250px; gap: 15px; align-items: stretch; }
+        .price-hero { font-size: 2.5em; font-weight: bold; color: #006b4d; margin: 5px 0; }
+        .trend-active { background-color: #006b4d !important; color: white !important; }
+        .btn-small { padding: 8px; font-size: 0.85em; width: 100%; margin: 4px 0; cursor: pointer; }
+        canvas { background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 250px; }
+        h3 { margin: 0 0 10px 0; font-size: 1em; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .rule-card { padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
     </style>
 </head>
 
 <body>
-    <header>
+    <header style="padding: 10px 5%;">
         <div class="logo-container">
-            <a href="home.html"><img src="HSG_Logo_DE_RGB.png" alt="HSG Logo"></a>
+            <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo" style="height: 35px;">
         </div>
-        <nav id="main-nav">
-            <a href="statisch.html">Statisch</a>
-            <a href="trend.html">Trend</a>
-            <a href="konter-trend.html">Konter-Trend</a>
-            <a href="kombiniert.html">Kombiniert</a>
-            <a href="challenge.html">Final Challenge</a>
-        </nav>
+        <div style="font-weight: bold; color: #006b4d;">TEACHER DASHBOARD</div>
     </header>
 
-    <div class="container" style="text-align: center;">
-        <h2>Lehrpersonen Portal: Markt-Steuerung</h2>
-        
-        <div class="market-info" style="display: block; padding: 30px;">
-            <div id="statusInfo" style="color: #94a3b8; font-weight: bold; margin-bottom: 10px;">STATUS: ANGEHALTEN</div>
-            <div class="price-large" id="priceLabel">100.00 CHF</div>
-            <button id="masterAction" class="btn-start" onclick="toggleMarket()" style="width: 300px;">▶ Markt Starten</button>
-        </div>
-
-        <h3 style="margin-top: 40px;">Markt-Trend beeinflussen</h3>
-        <div class="strategy-grid">
-            <div class="rule-card" id="btn-bull" onclick="setTrend('bull')" style="cursor:pointer;">
-                <span style="font-size: 2em;">🚀</span>
-                <h4>Bull-Markt</h4>
-                <p>Preise steigen tendenziell</p>
-            </div>
-            <div class="rule-card trend-active" id="btn-sideways" onclick="setTrend('sideways')" style="cursor:pointer;">
-                <span style="font-size: 2em;">↔</span>
-                <h4>Neutral</h4>
-                <p>Zufällige Bewegung</p>
-            </div>
-            <div class="rule-card" id="btn-bear" onclick="setTrend('bear')" style="cursor:pointer;">
-                <span style="font-size: 2em;">📉</span>
-                <h4>Bear-Markt</h4>
-                <p>Preise sinken tendenziell</p>
-            </div>
-        </div>
-
-        <h3 style="margin-top: 40px;">Events & Volatilität</h3>
-        <div class="strategy-grid">
-            <div class="rule-card spike-up" onclick="triggerSpike(5)" style="cursor:pointer;">
-                <h4>⚡ Up-Spike</h4>
-                <p>Sofort +5% Kurs-Sprung</p>
-            </div>
+    <div class="admin-container">
+        <div class="dashboard-layout">
+            
             <div class="rule-card">
-                <h4>Schwankung</h4>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 10px;">
-                    <button class="menu-toggle" style="position:static; display:block; background:#e2e8f0;" onclick="adjustVol(-0.5)">-</button>
-                    <b style="font-size: 1.5em;"><span id="volLabel">1.5</span>%</b>
-                    <button class="menu-toggle" style="position:static; display:block; background:#e2e8f0;" onclick="adjustVol(0.5)">+</button>
+                <div>
+                    <h3>📡 Status</h3>
+                    <div id="statusInfo" style="font-size: 0.8em; font-weight: bold; margin-bottom: 5px;">OFFLINE</div>
+                    <div class="price-hero" id="priceLabel">100.00</div>
+                    <button id="masterAction" class="btn-start" onclick="toggleMarket()">▶ Markt Start</button>
+                </div>
+                <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                    <h3>⚙️ Vola: <span id="volLabel">1.5</span>%</h3>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-small" style="background:#e2e8f0;" onclick="adjustVol(-0.5)">-</button>
+                        <button class="btn-small" style="background:#e2e8f0;" onclick="adjustVol(0.5)">+</button>
+                    </div>
                 </div>
             </div>
-            <div class="rule-card spike-down" onclick="triggerSpike(-5)" style="cursor:pointer;">
-                <h4>💥 Down-Spike</h4>
-                <p>Sofort -5% Kurs-Sturz</p>
-            </div>
-        </div>
 
-        <div class="reset-zone">
-            <div class="rule-card" style="max-width: 500px; margin: 0 auto; border-color: #f59e0b;">
-                <h4 style="color: #d97706;">Challenge Modus</h4>
-                <button id="challengeToggleBtn" class="btn-start" style="background: #d97706; margin: 15px 0;" onclick="toggleChallenge()">
-                    🔓 Challenge freischalten
-                </button>
-                <p style="font-size: 0.8em; color: #64748b;">Ermöglicht Schülern den Beitritt zum Leaderboard</p>
+            <div class="rule-card">
+                <h3>📈 Kursverlauf (Live)</h3>
+                <canvas id="chart"></canvas>
             </div>
-            
-            <button onclick="fullReset()" style="margin-top: 30px; background: none; border: none; color: #ef4444; cursor: pointer; text-decoration: underline;">
-                ⚠️ Alles zurücksetzen (Leaderboard & Markt)
-            </button>
+
+            <div class="rule-card">
+                <div>
+                    <h3>🚀 Trends</h3>
+                    <button class="btn-small" id="btn-bull" onclick="setTrend('bull')">Bull (Anstieg)</button>
+                    <button class="btn-small trend-active" id="btn-sideways" onclick="setTrend('sideways')">Neutral</button>
+                    <button class="btn-small" id="btn-bear" onclick="setTrend('bear')">Bear (Absturz)</button>
+                </div>
+                <div style="margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                    <h3>💥 Events</h3>
+                    <button class="btn-small" style="background:#fee2e2; color:#991b1b;" onclick="triggerSpike(-5)">Crash -5%</button>
+                    <button id="challengeToggleBtn" class="btn-small" style="background: #d97706; color:white;" onclick="toggleChallenge()">🔓 Challenge</button>
+                    <button onclick="fullReset()" style="background:none; border:none; color:#ef4444; font-size:0.7em; cursor:pointer; width:100%; margin-top:5px;">⚠️ System Reset</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // --- LOGIK BLEIBT GLEICH ---
         const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
         const db = supabase.createClient(S_URL, S_KEY);
         
         let currentPrice = 100.00, activeTrend = 'sideways', volatility = 1.5, marketActive = false, tickerId = null, challengeActive = false;
-
-        async function toggleChallenge() {
-            challengeActive = !challengeActive;
-            const btn = document.getElementById('challengeToggleBtn');
-            await db.from('market').update({ challenge_active: challengeActive }).eq('id', 1);
-            if (challengeActive) {
-                btn.innerText = "🔒 Challenge sperren";
-                btn.style.background = "#ef4444";
-            } else {
-                btn.innerText = "🔓 Challenge freischalten";
-                btn.style.background = "#d97706";
-            }
-        }
         
+        // Marktdaten für den Chart
+        let history = [100.00]; 
+        let portfolioHistory = []; // Bleibt leer, da Lehrer kein Portfolio hat (charts.js braucht das Array aber oft)
+
         function toggleMarket() {
             const btn = document.getElementById('masterAction');
             const status = document.getElementById('statusInfo');
             if (!marketActive) {
                 marketActive = true;
-                btn.innerText = "⏹ Markt Stoppen";
+                btn.innerText = "⏹ Stopp";
                 btn.classList.add('running');
                 status.innerText = "STATUS: LIVE";
                 status.style.color = "#22c55e";
                 tickerId = setInterval(executeTick, 500);
             } else {
-                stopMarket();
+                marketActive = false;
+                btn.innerText = "▶ Markt Start";
+                btn.classList.remove('running');
+                status.innerText = "STATUS: STANDBY";
+                status.style.color = "#94a3b8";
+                clearInterval(tickerId);
             }
-        }
-
-        function stopMarket() {
-            marketActive = false;
-            const btn = document.getElementById('masterAction');
-            const status = document.getElementById('statusInfo');
-            if(btn) { btn.innerText = "▶ Markt Starten"; btn.classList.remove('running'); }
-            if(status) { status.innerText = "STATUS: ANGEHALTEN"; status.style.color = "#94a3b8"; }
-            clearInterval(tickerId);
         }
 
         async function executeTick() {
             let changePercent = (Math.random() - 0.5) * (volatility / 100);
             if (activeTrend === 'bull') changePercent += 0.005; 
             if (activeTrend === 'bear') changePercent -= 0.006; 
+            
             currentPrice = Math.max(0.5, +(currentPrice * (1 + changePercent)).toFixed(2));
+            
+            // Chart-Historie aktualisieren
+            history.push(currentPrice);
+            if(history.length > 50) history.shift();
+            
             updateDisplayAndDB();
         }
 
+        async function updateDisplayAndDB() {
+            document.getElementById('priceLabel').innerText = currentPrice.toFixed(2);
+            // Chart neu zeichnen
+            if (typeof drawChart === "function") drawChart(); 
+            // DB Update
+            await db.from('market').update({ price: currentPrice }).eq('id', 1);
+        }
+
+        // --- Restliche Funktionen (Trend, Spike, Reset) ---
+        function setTrend(t) {
+            activeTrend = t;
+            document.querySelectorAll('#btn-bull, #btn-sideways, #btn-bear').forEach(b => b.classList.remove('trend-active'));
+            document.getElementById('btn-' + t).classList.add('trend-active');
+        }
+
         async function triggerSpike(percent) {
-            if (!marketActive) return alert("Starte erst den Markt!");
+            if (!marketActive) return alert("Markt nicht aktiv!");
             currentPrice = Math.max(0.5, +(currentPrice * (1 + percent/100)).toFixed(2));
             updateDisplayAndDB();
         }
@@ -156,28 +138,25 @@
             document.getElementById('volLabel').innerText = volatility.toFixed(1);
         }
 
-        async function updateDisplayAndDB() {
-            document.getElementById('priceLabel').innerText = currentPrice.toFixed(2) + " CHF";
-            await db.from('market').update({ price: currentPrice }).eq('id', 1);
-        }
-
-        function setTrend(t) {
-            activeTrend = t;
-            document.querySelectorAll('.rule-card').forEach(b => b.classList.remove('trend-active'));
-            document.getElementById('btn-' + t).classList.add('trend-active');
+        async function toggleChallenge() {
+            challengeActive = !challengeActive;
+            const btn = document.getElementById('challengeToggleBtn');
+            await db.from('market').update({ challenge_active: challengeActive }).eq('id', 1);
+            btn.innerText = challengeActive ? "🔒 Sperren" : "🔓 Challenge";
+            btn.style.background = challengeActive ? "#ef4444" : "#d97706";
         }
 
         async function fullReset() {
-            if (!confirm("Reset durchführen?")) return;
-            stopMarket();
+            if (!confirm("Wirklich alles zurücksetzen?")) return;
+            currentPrice = 100.00;
+            history = [100.00];
             await db.from('market').update({ price: -1 }).eq('id', 1);
             await db.from('leaderboard').delete().neq('name', '---');
-            setTimeout(async () => {
-                currentPrice = 100.00;
-                await db.from('market').update({ price: 100.00 }).eq('id', 1);
-                document.getElementById('priceLabel').innerText = "100.00 CHF";
-            }, 2000);
+            updateDisplayAndDB();
         }
+
+        // Initialer Chart-Aufruf
+        window.onload = () => { if (typeof drawChart === "function") drawChart(); };
     </script>
 </body>
 </html>
