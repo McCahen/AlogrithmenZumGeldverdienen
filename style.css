@@ -6,26 +6,64 @@ body {
     color: #1e293b; 
 }
 
-/* --- HEADER & NAV --- */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 50px;
-    border-bottom: 1px solid #eeeeee;
+/* --- RESPONSIVE NAV --- */
+
+/* Der Button, der nur mobil erscheint */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 10px;
+    z-index: 1001;
 }
 
-.logo-container img { height: 40px; }
-
-nav { display: flex; gap: 25px; }
-nav a { 
-    text-decoration: none; 
-    color: #333; 
-    font-size: 0.9em; 
-    font-weight: 500; 
-    padding-bottom: 5px;
+.menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+    transition: 0.3s;
 }
-nav a.active { color: #006b4d; border-bottom: 2px solid #006b4d; }
+
+/* Mobile Ansicht (unter 768px Breite) */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex; /* Button anzeigen */
+    }
+
+    nav {
+        display: none; /* Normales Menü verstecken */
+        position: absolute;
+        top: 70px;
+        right: 0;
+        background: white;
+        width: 100%;
+        flex-direction: column;
+        gap: 0;
+        border-bottom: 1px solid #eee;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        z-index: 1000;
+    }
+
+    nav.active {
+        display: flex; /* Erscheint, wenn 'active' per JS gesetzt wird */
+    }
+
+    nav a {
+        padding: 15px 50px;
+        border-bottom: 1px solid #f8fafc;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    nav a.active {
+        border-bottom: none;
+        border-left: 4px solid #006b4d;
+    }
+}
 
 /* --- CONTAINER & CHART --- */
 .container { 
