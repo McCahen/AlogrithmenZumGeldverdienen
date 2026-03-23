@@ -7,22 +7,28 @@
     <link rel="stylesheet" href="style.css">
     <script src="charts.js"></script> <style>
         .admin-container { max-width: 1200px; margin: 0 auto; padding: 10px 20px; }
-        .dashboard-layout { display: grid; grid-template-columns: 250px 1fr 250px; gap: 15px; align-items: stretch; }
+        /* Kompaktes 3-Spalten-Grid */
+        .dashboard-layout { 
+            display: grid; 
+            grid-template-columns: 220px 1fr 220px; 
+            gap: 15px; 
+            max-height: 400px; 
+        }
         .price-hero { font-size: 2.5em; font-weight: bold; color: #006b4d; margin: 5px 0; }
-        .trend-active { background-color: #006b4d !important; color: white !important; }
-        .btn-small { padding: 8px; font-size: 0.85em; width: 100%; margin: 4px 0; cursor: pointer; }
-        canvas { background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 250px; }
-        h3 { margin: 0 0 10px 0; font-size: 1em; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-        .rule-card { padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+        .trend-active { background-color: #006b4d !important; color: white !important; border: 1px solid #004d37 !important; }
+        .btn-small { padding: 6px; font-size: 0.8em; width: 100%; margin: 3px 0; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1; background: #f1f5f9; }
+        canvas { background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; width: 100% !important; height: 220px !important; }
+        h3 { margin: 0 0 8px 0; font-size: 0.9em; color: #64748b; text-transform: uppercase; }
+        .rule-card { padding: 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
     </style>
 </head>
 
 <body>
-    <header style="padding: 10px 5%;">
+    <header style="padding: 8px 5%;">
         <div class="logo-container">
-            <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo" style="height: 35px;">
+            <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo" style="height: 30px;">
         </div>
-        <div style="font-weight: bold; color: #006b4d;">TEACHER DASHBOARD</div>
+        <div style="font-weight: bold; color: #006b4d; font-size: 0.9em;">MARKTPRÄSIDENT / ADMIN</div>
     </header>
 
     <div class="admin-container">
@@ -30,37 +36,37 @@
             
             <div class="rule-card">
                 <div>
-                    <h3>📡 Status</h3>
-                    <div id="statusInfo" style="font-size: 0.8em; font-weight: bold; margin-bottom: 5px;">OFFLINE</div>
+                    <h3>📡 Markt-Status</h3>
+                    <div id="statusInfo" style="font-size: 0.75em; font-weight: bold;">STANDBY</div>
                     <div class="price-hero" id="priceLabel">100.00</div>
-                    <button id="masterAction" class="btn-start" onclick="toggleMarket()">▶ Markt Start</button>
+                    <button id="masterAction" class="btn-start" style="padding: 10px;" onclick="toggleMarket()">▶ Markt Starten</button>
                 </div>
-                <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
                     <h3>⚙️ Vola: <span id="volLabel">1.5</span>%</h3>
-                    <div style="display: flex; gap: 5px;">
-                        <button class="btn-small" style="background:#e2e8f0;" onclick="adjustVol(-0.5)">-</button>
-                        <button class="btn-small" style="background:#e2e8f0;" onclick="adjustVol(0.5)">+</button>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn-small" onclick="adjustVol(-0.5)">-</button>
+                        <button class="btn-small" onclick="adjustVol(0.5)">+</button>
                     </div>
                 </div>
             </div>
 
             <div class="rule-card">
-                <h3>📈 Kursverlauf (Live)</h3>
+                <h3>📈 Live-Kursverlauf</h3>
                 <canvas id="chart"></canvas>
             </div>
 
             <div class="rule-card">
                 <div>
-                    <h3>🚀 Trends</h3>
-                    <button class="btn-small" id="btn-bull" onclick="setTrend('bull')">Bull (Anstieg)</button>
-                    <button class="btn-small trend-active" id="btn-sideways" onclick="setTrend('sideways')">Neutral</button>
-                    <button class="btn-small" id="btn-bear" onclick="setTrend('bear')">Bear (Absturz)</button>
+                    <h3>🚀 Trendsteuerung</h3>
+                    <button class="btn-small" id="btn-bull" onclick="setTrend('bull')">🚀 Bull (+)</button>
+                    <button class="btn-small trend-active" id="btn-sideways" onclick="setTrend('sideways')">↔ Neutral</button>
+                    <button class="btn-small" id="btn-bear" onclick="setTrend('bear')">📉 Bear (-)</button>
                 </div>
-                <div style="margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                    <h3>💥 Events</h3>
+                <div style="margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;">
+                    <h3>🛠 System</h3>
                     <button class="btn-small" style="background:#fee2e2; color:#991b1b;" onclick="triggerSpike(-5)">Crash -5%</button>
                     <button id="challengeToggleBtn" class="btn-small" style="background: #d97706; color:white;" onclick="toggleChallenge()">🔓 Challenge</button>
-                    <button onclick="fullReset()" style="background:none; border:none; color:#ef4444; font-size:0.7em; cursor:pointer; width:100%; margin-top:5px;">⚠️ System Reset</button>
+                    <button onclick="fullReset()" style="background:none; border:none; color:#ef4444; font-size:0.65em; cursor:pointer; width:100%; margin-top:4px;">⚠️ Reset System</button>
                 </div>
             </div>
 
@@ -72,25 +78,26 @@
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
         const db = supabase.createClient(S_URL, S_KEY);
         
-        let currentPrice = 100.00, activeTrend = 'sideways', volatility = 1.5, marketActive = false, tickerId = null, challengeActive = false;
-        
-        // Marktdaten für den Chart
+        // Diese Variablen nutzt charts.js
+        let price = 100.00; 
         let history = [100.00]; 
-        let portfolioHistory = []; // Bleibt leer, da Lehrer kein Portfolio hat (charts.js braucht das Array aber oft)
+        let portfolioHistory = []; // Bleibt leer, drawChart() sollte das händeln
+
+        let activeTrend = 'sideways', volatility = 1.5, marketActive = false, tickerId = null, challengeActive = false;
 
         function toggleMarket() {
             const btn = document.getElementById('masterAction');
             const status = document.getElementById('statusInfo');
-            if (!marketActive) {
-                marketActive = true;
+            marketActive = !marketActive;
+            
+            if (marketActive) {
                 btn.innerText = "⏹ Stopp";
                 btn.classList.add('running');
                 status.innerText = "STATUS: LIVE";
                 status.style.color = "#22c55e";
                 tickerId = setInterval(executeTick, 500);
             } else {
-                marketActive = false;
-                btn.innerText = "▶ Markt Start";
+                btn.innerText = "▶ Markt Starten";
                 btn.classList.remove('running');
                 status.innerText = "STATUS: STANDBY";
                 status.style.color = "#94a3b8";
@@ -103,24 +110,19 @@
             if (activeTrend === 'bull') changePercent += 0.005; 
             if (activeTrend === 'bear') changePercent -= 0.006; 
             
-            currentPrice = Math.max(0.5, +(currentPrice * (1 + changePercent)).toFixed(2));
-            
-            // Chart-Historie aktualisieren
-            history.push(currentPrice);
+            price = Math.max(0.5, +(price * (1 + changePercent)).toFixed(2));
+            history.push(price);
             if(history.length > 50) history.shift();
             
-            updateDisplayAndDB();
+            updateUI();
         }
 
-        async function updateDisplayAndDB() {
-            document.getElementById('priceLabel').innerText = currentPrice.toFixed(2);
-            // Chart neu zeichnen
+        async function updateUI() {
+            document.getElementById('priceLabel').innerText = price.toFixed(2);
             if (typeof drawChart === "function") drawChart(); 
-            // DB Update
-            await db.from('market').update({ price: currentPrice }).eq('id', 1);
+            await db.from('market').update({ price: price }).eq('id', 1);
         }
 
-        // --- Restliche Funktionen (Trend, Spike, Reset) ---
         function setTrend(t) {
             activeTrend = t;
             document.querySelectorAll('#btn-bull, #btn-sideways, #btn-bear').forEach(b => b.classList.remove('trend-active'));
@@ -128,9 +130,9 @@
         }
 
         async function triggerSpike(percent) {
-            if (!marketActive) return alert("Markt nicht aktiv!");
-            currentPrice = Math.max(0.5, +(currentPrice * (1 + percent/100)).toFixed(2));
-            updateDisplayAndDB();
+            if (!marketActive) return;
+            price = Math.max(0.5, +(price * (1 + percent/100)).toFixed(2));
+            updateUI();
         }
 
         function adjustVol(val) {
@@ -147,15 +149,13 @@
         }
 
         async function fullReset() {
-            if (!confirm("Wirklich alles zurücksetzen?")) return;
-            currentPrice = 100.00;
-            history = [100.00];
+            if (!confirm("System-Reset?")) return;
+            price = 100.00; history = [100.00];
             await db.from('market').update({ price: -1 }).eq('id', 1);
             await db.from('leaderboard').delete().neq('name', '---');
-            updateDisplayAndDB();
+            updateUI();
         }
 
-        // Initialer Chart-Aufruf
         window.onload = () => { if (typeof drawChart === "function") drawChart(); };
     </script>
 </body>
