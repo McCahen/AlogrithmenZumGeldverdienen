@@ -65,7 +65,7 @@
         
             if (error) return;
         
-            const list = document.getElementById('leaderboard-body');
+            const list = document.getElementById('leaderboardBody');
             list.innerHTML = "";
         
             data.forEach((entry, index) => {
@@ -90,7 +90,7 @@
 
         // Initialer Aufruf und Intervall
         updateLeaderboard();
-        setInterval(update, 500);
+        setInterval(updateLeaderboard, 1000);
     </script>
 </body>
 </html>
