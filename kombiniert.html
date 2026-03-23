@@ -2,193 +2,208 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Algo-Workshop: Kombinations-Modell</title>
+    <title>HSG Algo-Trader: Final Challenge</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Spezifische Ergänzung für die Kacheln in der Kombi-Ansicht */
-        .switch-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        /* Fix für den Button, da das CSS .btn-start erwartet */
-        .btn-start.running { background: #ef4444 !important; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
     <header>
         <div class="logo-container">
             <a href="home.html">
                 <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo">
             </a>
         </div>
-        
         <nav>
             <a href="statisch.html">Statisch</a>
             <a href="trend.html">Trend</a>
             <a href="konter-trend.html">Konter-Trend</a>
-            <a href="kombiniert.html" class="active">Kombiniert</a>
-            <a href="challenge.html">Final Challenge</a>
+            <a href="kombiniert.html">Kombiniert</a>
+            <a href="challenge.html" class="active">Final Challenge</a>
         </nav>
     </header>
 
-<div class="container">
-    <h2>🧬 Kombinations-Modell</h2>
-    
-    <div class="market-info">
-        <div>Aktienkurs <strong id="price">100.00 €</strong></div>
-        <div>Depot-Gesamtwert <strong id="total" style="color: #0284c7;">1000.00 €</strong></div>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>🏆 Final Challenge: Live-Markt</h2>
+            <div id="status-info" style="font-size: 0.8em; color: #64748b; font-weight: bold;">
+                <span id="status-dot"></span> SERVER VERBUNDEN
+            </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px;">
+            <span style="font-weight: bold;">Team Name:</span>
+            <input type="text" id="playerName" placeholder="z.B. Team Alpha" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+        </div>
+
+        <div class="market-info">
+            <div>Live-Kurs <strong id="price">Warten...</strong></div>
+            <div>Dein Score <strong id="total" style="color: #006b4d;">1000.00 €</strong></div>
+        </div>
+
+        <div class="strategy-grid">
+            <div class="rule-card buy">
+                <div class="switch-header">
+                    <h4>📈 Trend-Kauf</h4>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="e1" checked>
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+                <div class="input-group"><span>Ticks:</span> <input type="number" id="t1" value="5"></div>
+                <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="1.5"></div>
+            </div>
+
+            <div class="rule-card sell">
+                <div class="switch-header">
+                    <h4>💰 Gewinnmitnahme</h4>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="e2">
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+                <div class="input-group"><span>Ticks:</span> <input type="number" id="t2" value="10"></div>
+                <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="4"></div>
+            </div>
+
+            <div class="rule-card buy">
+                <div class="switch-header">
+                    <h4>📉 Dip-Kauf</h4>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="e3">
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+                <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="8"></div>
+                <div class="input-group"><span>Fall > %:</span> <input type="number" id="p3" value="2.5"></div>
+            </div>
+
+            <div class="rule-card sell">
+                <div class="switch-header">
+                    <h4>🛡️ Stop-Loss</h4>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="e4" checked>
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+                <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
+                <div class="input-group"><span>Fall > %:</span> <input type="number" id="p4" value="2"></div>
+            </div>
+        </div>
+
+        <button onclick="toggleSimulation()" id="startBtn" class="btn-start">▶ Trading Bot Starten</button>
+
+        <canvas id="chart"></canvas>
+
+        <div class="footer-stats">
+            <span>Cash: <b id="cash">1000.00</b> €</span>
+            <span>Bestand: <b id="shares">0</b> Stk.</span>
+            <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
+        </div>
     </div>
 
-    <div class="strategy-grid">
-        
-        <div class="rule-card buy">
-            <div class="switch-header">
-                <h4>📈 Trend-Kauf</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e1" checked>
-                    <span class="ios-slider"></span>
-                </label>
-            </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t1" value="5"></div>
-            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p1" value="2"></div>
-        </div>
+    <script>
+        // --- SETUP ---
+        const S_URL = 'DEINE_SUPABASE_URL';
+        const S_KEY = 'DEIN_SUPABASE_KEY';
+        const db = supabase.createClient(S_URL, S_KEY);
 
-        <div class="rule-card sell">
-            <div class="switch-header">
-                <h4>💰 Gewinnmitnahme</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e2">
-                    <span class="ios-slider"></span>
-                </label>
-            </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t2" value="10"></div>
-            <div class="input-group"><span>Anstieg > %:</span> <input type="number" id="p2" value="5"></div>
-        </div>
+        let price = 100, cash = 1000, shares = 0, isRunning = false;
+        let history = [], portfolioHistory = [];
+        let playerName = "";
 
-        <div class="rule-card buy">
-            <div class="switch-header">
-                <h4>📉 Dip-Kauf</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e3">
-                    <span class="ios-slider"></span>
-                </label>
-            </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t3" value="8"></div>
-            <div class="input-group"><span>Fall > %:</span> <input type="number" id="p3" value="3"></div>
-        </div>
-
-        <div class="rule-card sell">
-            <div class="switch-header">
-                <h4>🛡️ Stop-Loss</h4>
-                <label class="ios-switch">
-                    <input type="checkbox" id="e4" checked>
-                    <span class="ios-slider"></span>
-                </label>
-            </div>
-            <div class="input-group"><span>Ticks:</span> <input type="number" id="t4" value="3"></div>
-            <div class="input-group"><span>Fall > %:</span> <input type="number" id="p4" value="2"></div>
-        </div>
-    </div>
-
-    <button onclick="toggleSimulation()" id="startBtn" class="btn-start">▶ Simulation Starten</button>
-
-    <canvas id="chart"></canvas>
-
-    <div class="footer-stats">
-        <span>Cash: <b id="cash">1000.00</b> €</span>
-        <span>Bestand: <b id="shares">0</b> Stk.</span>
-        <span>Aktienwert: <b id="sharesValue">0.00</b> €</span>
-    </div>
-</div>
-
-<script>
-    let price = 100, cash = 1000, shares = 0, isRunning = false;
-    let history = [100], portfolioHistory = [1000];
-
-    function toggleSimulation() {
-        isRunning = !isRunning;
-        const btn = document.getElementById('startBtn');
-        btn.innerText = isRunning ? "⏹ Simulation Stoppen" : "▶ Simulation Starten";
-        // Wir nutzen die im CSS definierte Klasse und toggeln nur den Status-Zustand
-        if(isRunning) {
-            btn.classList.add('running');
-        } else {
-            btn.classList.remove('running');
+        // --- SIMULATION CONTROL ---
+        function toggleSimulation() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) return alert("Bitte Team-Namen eingeben!");
+            
+            isRunning = !isRunning;
+            const btn = document.getElementById('startBtn');
+            btn.innerText = isRunning ? "⏹ Trading Bot Stoppen" : "▶ Trading Bot Starten";
+            if(isRunning) { btn.classList.add('running'); } else { btn.classList.remove('running'); }
+            
+            if(isRunning) runLoop();
         }
-        if(isRunning) runStep();
-    }
 
-    function runStep() {
-        if(!isRunning) return;
+        // --- MAIN LOOP (LIVE DATEN) ---
+        async function runLoop() {
+            if(!isRunning) return;
 
-        price = +(price * (1 + (Math.random() - 0.48) * 0.02)).toFixed(2);
-        history.push(price);
-        if(history.length > 50) history.shift();
+            try {
+                // Preis vom Lehrer-Portal holen
+                const { data, error } = await db.from('market').select('price').eq('id', 1).single();
+                
+                if (data && data.price > 0) {
+                    price = data.price;
+                    history.push(price);
+                    if(history.length > 50) history.shift();
+                    document.getElementById('status-dot').style.background = "#22c55e";
 
-        // Dynamische Prüfung der 4 Regeln
-        checkRule(1, "BUY", true);  
-        checkRule(2, "SELL", true); 
-        checkRule(3, "BUY", false); 
-        checkRule(4, "SELL", false);
+                    // Regeln prüfen
+                    checkRule(1, "BUY", true); checkRule(2, "SELL", true);
+                    checkRule(3, "BUY", false); checkRule(4, "SELL", false);
 
-        let total = +(cash + shares * price).toFixed(2);
-        portfolioHistory.push(total);
-        if(portfolioHistory.length > 50) portfolioHistory.shift();
+                    let totalValue = +(cash + shares * price).toFixed(2);
+                    portfolioHistory.push(totalValue);
+                    if(portfolioHistory.length > 50) portfolioHistory.shift();
 
-        updateUI(total);
-        setTimeout(runStep, 600);
-    }
+                    // Scoreboard-Update
+                    await db.from('leaderboard').upsert({ name: playerName, score: totalValue });
+                    
+                    updateUI(totalValue);
+                } else if (data && data.price === -1) {
+                    // RESET SIGNAL VOM LEHRER
+                    cash = 1000; shares = 0; history = []; portfolioHistory = [];
+                }
+            } catch (e) {
+                console.error("Verbindungsfehler:", e);
+                document.getElementById('status-dot').style.background = "red";
+            }
 
-    function checkRule(id, action, positiveDirection) {
-        if (!document.getElementById('e' + id).checked) return;
-        let t = parseInt(document.getElementById('t' + id).value);
-        let p = parseFloat(document.getElementById('p' + id).value) / 100;
-
-        if (history.length > t) {
-            let oldPrice = history[history.length - 1 - t];
-            let change = (price - oldPrice) / oldPrice;
-            if (positiveDirection && change >= p) executeTrade(action);
-            else if (!positiveDirection && change <= -p) executeTrade(action);
+            setTimeout(runLoop, 1500);
         }
-    }
 
-    function executeTrade(action) {
-        if (action === "BUY" && cash >= price) { cash -= price; shares++; }
-        else if (action === "SELL" && shares > 0) { cash += price; shares--; }
-    }
+        function checkRule(id, action, positiveDirection) {
+            if (!document.getElementById('e' + id).checked) return;
+            let t = parseInt(document.getElementById('t' + id).value);
+            let p = parseFloat(document.getElementById('p' + id).value) / 100;
 
-    function updateUI(total) {
-        document.getElementById('price').innerText = price.toFixed(2) + " €";
-        document.getElementById('cash').innerText = cash.toFixed(2);
-        document.getElementById('shares').innerText = shares;
-        document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
-        document.getElementById('total').innerText = total.toFixed(2) + " €";
-        drawChart();
-    }
+            if (history.length > t) {
+                let oldPrice = history[history.length - 1 - t];
+                let change = (price - oldPrice) / oldPrice;
+                if (positiveDirection && change >= p) executeTrade(action);
+                else if (!positiveDirection && change <= -p) executeTrade(action);
+            }
+        }
 
-    function drawChart() {
-        const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
-        if(!canvas) return;
-        canvas.width = canvas.offsetWidth; canvas.height = 220;
-        const padding = 40, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        
-        if (history.length < 2) return;
-        const minP = Math.min(...history) * 0.98, maxP = Math.max(...history) * 1.02;
-        const minPort = Math.min(...portfolioHistory) * 0.98, maxPort = Math.max(...portfolioHistory) * 1.02;
+        function executeTrade(action) {
+            if (action === "BUY" && cash >= price) { cash -= price; shares++; }
+            else if (action === "SELL" && shares > 0) { cash += price; shares--; }
+        }
 
-        const getX = (i) => padding + (i / 49) * w;
-        const getYPrice = (v) => canvas.height - padding - ((v - minP) / (maxP - minP)) * h;
-        const getYPort = (v) => canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h;
+        function updateUI(total) {
+            document.getElementById('price').innerText = price.toFixed(2) + " €";
+            document.getElementById('cash').innerText = cash.toFixed(2);
+            document.getElementById('shares').innerText = shares;
+            document.getElementById('sharesValue').innerText = (shares * price).toFixed(2);
+            document.getElementById('total').innerText = total.toFixed(2) + " €";
+            drawChart();
+        }
 
-        ctx.setLineDash([5, 5]); ctx.strokeStyle = "#94a3b8"; ctx.beginPath();
-        history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPrice(v)) : ctx.lineTo(getX(i), getYPrice(v))); ctx.stroke();
-
-        ctx.setLineDash([]); ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 3; ctx.beginPath();
-        portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), getYPort(v)) : ctx.lineTo(getX(i), getYPort(v))); ctx.stroke();
-    }
-</script>
+        function drawChart() {
+            const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth; canvas.height = 200;
+            const padding = 30, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            if (history.length < 2) return;
+            const minP = Math.min(...history) * 0.99, maxP = Math.max(...history) * 1.01;
+            const minPort = Math.min(...portfolioHistory) * 0.99, maxPort = Math.max(...portfolioHistory) * 1.01;
+            const getX = (i) => padding + (i / 49) * w;
+            ctx.setLineDash([5, 5]); ctx.strokeStyle = "#94a3b8"; ctx.beginPath();
+            history.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), canvas.height - padding - ((v - minP) / (maxP - minP)) * h) : ctx.lineTo(getX(i), canvas.height - padding - ((v - minP) / (maxP - minP)) * h)); ctx.stroke();
+            ctx.setLineDash([]); ctx.strokeStyle = "#006b4d"; ctx.lineWidth = 3; ctx.beginPath();
+            portfolioHistory.forEach((v, i) => i === 0 ? ctx.moveTo(getX(i), canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h) : ctx.lineTo(getX(i), canvas.height - padding - ((v - minPort) / (maxPort - minPort)) * h)); ctx.stroke();
+        }
+    </script>
 </body>
 </html>
