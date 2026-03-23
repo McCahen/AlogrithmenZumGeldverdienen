@@ -58,20 +58,18 @@
     let portfolioHistory = [1000]; // Startwert des Depots
 
     function toggleSimulation() {
-    isRunning = !isRunning;
-    const btn = document.getElementById('startBtn');
-    
-    if (isRunning) {
-        btn.innerText = "⏹ Simulation Stoppen";
-        btn.classList.remove('btn-start');
-        btn.classList.add('btn-stop');
-        runStep();
-    } else {
-        btn.innerText = "▶ Simulation Starten";
-        btn.classList.remove('btn-stop');
-        btn.classList.add('btn-start');
+        isRunning = !isRunning;
+        const btn = document.getElementById('startBtn');
+        
+        if (isRunning) {
+            btn.innerText = "⏹ Simulation Stoppen";
+            btn.classList.add('running'); // CSS macht ihn rot
+            runStep();
+        } else {
+            btn.innerText = "▶ Simulation Starten";
+            btn.classList.remove('running'); // CSS macht ihn wieder grün
+        }
     }
-}
 
     function runStep() {
         if(!isRunning) return;
