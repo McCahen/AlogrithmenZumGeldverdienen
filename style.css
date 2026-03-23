@@ -40,8 +40,8 @@ nav a {
 }
 
 nav a:hover, nav a.active { 
-    color: #006b4d; 
-    border-bottom: 2px solid #006b4d; 
+    color: #00802f; 
+    border-bottom: 2px solid #00802f; 
 }
 
 /* Der Hamburger-Button (standardmäßig versteckt) */
@@ -151,7 +151,7 @@ nav a:hover, nav a.active {
     border-radius: 50%;
 }
 
-input:checked + .ios-slider { background-color: #006b4d; }
+input:checked + .ios-slider { background-color: #00802f; }
 input:checked + .ios-slider:before { transform: translateX(22px); }
 
 /* --- 7. INPUTS & BUTTONS --- */
@@ -172,7 +172,7 @@ input:checked + .ios-slider:before { transform: translateX(22px); }
 }
 
 .btn-start {
-    background: #006b4d;
+    background: #00802f;
     color: white;
     border: none;
     padding: 15px 40px;
@@ -229,5 +229,5 @@ input:checked + .ios-slider:before { transform: translateX(22px); }
         box-sizing: border-box;
     }
 
-    nav a.active { border-bottom: none; border-left: 4px solid #006b4d; }
+    nav a.active { border-bottom: none; border-left: 4px solid #00802f; }
 }
