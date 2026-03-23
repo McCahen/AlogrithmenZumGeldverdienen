@@ -182,7 +182,7 @@
 
                 let totalValue = +(cash + shares * price).toFixed(2);
                 portfolioHistory.push(totalValue);
-                if(portfolioHistory.length > 50) portfolioHistory.shift();
+                if(portfolioHistory.length > 100) portfolioHistory.shift();
 
                 if (playerName) {
                     await tradingDb.from('leaderboard').upsert({ name: playerName, score: totalValue }, { onConflict: 'name' });
