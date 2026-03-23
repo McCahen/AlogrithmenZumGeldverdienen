@@ -231,3 +231,68 @@ input:checked + .ios-slider:before { transform: translateX(22px); }
 
     nav a.active { border-bottom: none; border-left: 4px solid #00802f; }
 }
+
+/* --- 10. HOME-PAGE SPEZIFISCH (Kompakte Kacheln) --- */
+.welcome-section {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.welcome-section h1 {
+    color: #006b4d;
+    font-size: 2.2em;
+    margin-bottom: 8px;
+}
+
+.lesson-grid {
+    display: grid;
+    /* Kompakter: Mindestbreite 220px statt 300px */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.lesson-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 150px;
+}
+
+.lesson-card:hover {
+    transform: translateY(-5px);
+    border-color: #006b4d;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+}
+
+.lesson-card .icon {
+    font-size: 2.2em;
+    margin-bottom: 10px;
+}
+
+.lesson-card h3 {
+    margin: 5px 0;
+    font-size: 1.1em;
+    color: #1e293b;
+}
+
+.lesson-card p {
+    font-size: 0.85em;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Spezial-Stil für die Final Challenge */
+.challenge-highlight {
+    background: #f0fdf4 !important;
+    border: 2px solid #006b4d !important;
+}
