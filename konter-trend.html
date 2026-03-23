@@ -159,7 +159,7 @@
 
         let currentTotal = +(cash + (shares * price)).toFixed(2);
         portfolioHistory.push(currentTotal);
-        if(portfolioHistory.length > 50) portfolioHistory.shift();
+        if(portfolioHistory.length > 100) portfolioHistory.shift();
 
         updateUI(currentTotal);
         setTimeout(runStep, 500);
