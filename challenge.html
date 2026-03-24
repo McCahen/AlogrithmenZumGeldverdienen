@@ -20,6 +20,10 @@
         }
         .tag-single { background: #e2e8f0; color: #475569; }
         .tag-allin { background: #006b4d; color: white; }
+        
+        /* Neuer Style für den Login-Screen */
+        #setup-screen { max-width: 400px; margin: 40px auto; }
+        #login-screen input { width: 100%; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -41,28 +45,35 @@
     </header>
 
 <div class="container">
-    <div id="setup-screen" style="text-align: center; padding: 40px 0;">
-        <div style="margin-bottom: 20px; font-size: 0.8em; color: #64748b;">
-            Server-Status: <span id="status-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:red; margin-right:5px;"></span>
-            <span id="status-text">Verbinde...</span>
+    <div id="setup-screen">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2>🚀 Challenge Beitritt</h2>
+            <p>Verbinde dich mit dem Raum deiner Lehrperson.</p>
         </div>
-        <h2>🚀 Algo-Workshop: Finale Challenge</h2>
-        <p>Gib Deinen Namen ein:</p>
-        <input type="text" id="playerName" placeholder="Name...">
-        <br>
-        <div style="text-align: center; margin-top: 30px;">
+        
+        <div id="login-screen" class="card">
+            <input type="text" id="roomCodeInput" placeholder="Raum-Code (z.B. HSG-202)">
+            <input type="text" id="playerNameInput" placeholder="Dein Name">
+            <button onclick="joinChallenge()" class="btn-start" style="width: 100%;">Beitreten</button>
+        </div>
+
+        <div id="waiting-area" style="display:none; text-align: center; margin-top: 20px;">
+            <div style="font-size: 0.8em; color: #64748b; margin-bottom: 10px;">
+                Status: <span id="status-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:red;"></span>
+                <span id="status-text">Prüfe Freigabe...</span>
+            </div>
             <button id="mainStartBtn" class="btn-start" onclick="startTrading()" disabled>
-                🔒 Warte auf Freigabe...
+                🔒 Warte auf Lehrperson...
             </button>
         </div>
     </div>
 
     <div id="trading-screen" style="display: none;">
-        <h2>🏆 Challenge: Wer gewinnt?</h2>
+        <h2>🏆 Challenge: <span id="room-label" style="color:#006b4d;">-</span></h2>
         <div class="market-info">
             <div>Kurs: <strong id="price">...</strong></div>
             <div>Depot: <strong id="total" style="color: #006b4d;">1000.00</strong></div>
-            <div>Name: <strong id="player-label" style="color:#64748b;">-</strong></div>
+            <div>Spieler: <strong id="player-label" style="color:#64748b;">-</strong></div>
         </div>
 
         <div class="strategy-grid">
@@ -130,19 +141,50 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
     const tradingDb = supabase.createClient(S_URL, S_KEY);
 
-    let price = 100, cash = 1000, shares = 0, history = [], portfolioHistory = [], playerName = "";
+    let price = 100, cash = 1000, shares = 0, history = [], portfolioHistory = [], currentRoom = "", playerName = "";
+
+    async function joinChallenge() {
+        const rCode = document.getElementById('roomCodeInput').value.trim();
+        const pName = document.getElementById('playerNameInput').value.trim();
+    
+        if (!rCode || !pName) return alert("Bitte Raum und Name eingeben!");
+    
+        // Prüfen, ob der Raum in der Datenbank existiert
+        const { data, error } = await tradingDb
+            .from('market')
+            .select('room_id')
+            .eq('room_id', rCode)
+            .single();
+    
+        if (data) {
+            currentRoom = rCode;
+            playerName = pName;
+            
+            // Login verstecken, Warteschlange zeigen
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('waiting-area').style.display = 'block';
+            
+            // Status-Check alle 2 Sek starten
+            setInterval(checkChallengeStatus, 2000);
+            checkChallengeStatus();
+        } else {
+            alert("Raum '" + rCode + "' wurde nicht gefunden. Bitte Lehrperson fragen.");
+        }
+    }
 
     async function checkChallengeStatus() {
+        if (!currentRoom) return;
         const dot = document.getElementById('status-dot');
         const statusTxt = document.getElementById('status-text');
         const btn = document.getElementById('mainStartBtn');
-        if(!dot || !btn) return;
 
         try {
-            const { data, error } = await tradingDb.from('market').select('challenge_active').eq('id', 1);
+            // Filtert jetzt nach room_id statt id:1
+            const { data, error } = await tradingDb.from('market').select('challenge_active').eq('room_id', currentRoom).single();
             if (error) throw error;
-            if (data && data.length > 0) {
-                const isActive = (data[0].challenge_active === true || data[0].challenge_active === 'true');
+
+            if (data) {
+                const isActive = (data.challenge_active === true || data.challenge_active === 'true');
                 if (isActive) {
                     dot.style.background = "#10b981"; statusTxt.innerText = "Challenge gestartet!";
                     btn.disabled = false; btn.innerText = "🚀 Börse betreten"; btn.style.background = "#10b981";
@@ -151,45 +193,50 @@
                     btn.disabled = true; btn.innerText = "🔒 Warte auf Freigabe..."; btn.style.background = "#cbd5e1";
                 }
             }
-        } catch(e) { dot.style.background = "red"; statusTxt.innerText = "Verbindungsfehler"; }
+        } catch(e) { console.error(e); }
     }
 
     async function startTrading() {
-        playerName = document.getElementById('playerName').value.trim();
-        if(!playerName) return alert("Bitte Name eingeben!");
         document.getElementById('setup-screen').style.display = 'none';
         document.getElementById('trading-screen').style.display = 'block';
         document.getElementById('player-label').innerText = playerName;
+        document.getElementById('room-label').innerText = currentRoom;
         runLoop();
     }
 
     async function runLoop() {
+        if (!currentRoom) return;
         try {
-            const { data, error } = await tradingDb.from('market').select('price').eq('id', 1).single();
+            // Abfrage gefiltert nach Raum
+            const { data, error } = await tradingDb.from('market').select('price').eq('room_id', currentRoom).single();
             if (error) throw error;
+
             if (data && data.price > 0) { 
                 price = data.price;
                 history.push(price);
                 if(history.length > 100) history.shift();
 
-                // Die 6 Regeln prüfen
-                checkRule(1, "BUY",  true,  false); // Trend Single
-                checkRule(2, "SELL", true,  false); // Profit Single
-                checkRule(3, "BUY",  true,  true);  // Momentum ALLIN
-                checkRule(4, "SELL", false, true);  // Exit ALLIN
-                checkRule(5, "BUY",  false, false); // Dip Single
-                checkRule(6, "SELL", false, false); // Risk Single
+                checkRule(1, "BUY",  true,  false);
+                checkRule(2, "SELL", true,  false);
+                checkRule(3, "BUY",  true,  true);
+                checkRule(4, "SELL", false, true);
+                checkRule(5, "BUY",  false, false);
+                checkRule(6, "SELL", false, false);
 
                 let totalValue = +(cash + shares * price).toFixed(2);
                 portfolioHistory.push(totalValue);
                 if(portfolioHistory.length > 100) portfolioHistory.shift();
 
-                if (playerName) {
-                    await tradingDb.from('leaderboard').upsert({ name: playerName, score: totalValue }, { onConflict: 'name' });
-                }
+                // Upsert mit room_id, damit Leaderboard getrennt ist
+                await tradingDb.from('leaderboard').upsert({ 
+                    name: playerName, 
+                    score: totalValue,
+                    room_id: currentRoom 
+                }, { onConflict: 'name, room_id' });
+
                 updateUI(totalValue);
             } else if (data && data.price === -1) {
-                location.reload(); // Einfacher Reload bei Admin-Reset
+                location.reload(); 
             }
         } catch (e) { console.error("Loop Error:", e); }
         setTimeout(runLoop, 500);
@@ -200,14 +247,11 @@
     function checkRule(id, action, positiveDir, isAllIn) {
         const toggle = document.getElementById('e' + id);
         if (!toggle || !toggle.checked) return;
-        
         let t = parseInt(document.getElementById('t' + id).value);
         let p = parseFloat(document.getElementById('p' + id).value) / 100;
-        
         if (history.length > t) {
             let oldPrice = history[history.length - 1 - t];
             let change = (price - oldPrice) / oldPrice;
-
             if (positiveDir && change >= p) executeTrade(action, isAllIn);
             else if (!positiveDir && change <= -p) executeTrade(action, isAllIn);
         }
@@ -217,8 +261,10 @@
         const log = document.getElementById('log-msg');
         if (action === "BUY" && cash >= price) {
             let amount = isAllIn ? Math.floor(cash / price) : 1;
-            cash -= amount * price; shares += amount;
-            log.innerText = `✅ KAUF: ${amount} Stk`;
+            if(amount > 0) {
+                cash -= amount * price; shares += amount;
+                log.innerText = `✅ KAUF: ${amount} Stk`;
+            }
         } else if (action === "SELL" && shares > 0) {
             let amount = isAllIn ? shares : 1;
             cash += amount * price; shares -= amount;
@@ -233,9 +279,6 @@
         document.getElementById('total').innerText = total.toFixed(2) + " CHF";
         if (typeof drawChart === "function") drawChart();
     }
-
-    checkChallengeStatus();
-    setInterval(checkChallengeStatus, 2000);
 </script>
 </body>
 </html>
