@@ -10,82 +10,100 @@
 <body>
 
 <header>
-    <div class="logo-container"><img src="HSG_Logo_DE_RGB.png" alt="HSG Logo"></div>
-    <nav><span style="font-weight: bold; color: #00802f;">Markt-Zentrale</span></nav>
+    <div class="logo-container">
+        <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo">
+    </div>
+    <nav><span style="font-weight: bold; color: #00802f;">Admin-Kommandozentrale</span></nav>
 </header>
 
 <div class="container">
     
-    <section class="card" id="setup-section">
-        <h3>1. Raum-Setup</h3>
-        <div class="input-group">
-            <input type="text" id="roomInput" placeholder="Raum-Code (z.B. KLASSE-101)">
-            <button onclick="createAndJoinRoom()" class="btn-start">Raum öffnen</button>
+    <div class="setup-container" style="max-width: 100%; margin-bottom: 20px;">
+        <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 15px 25px;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <h3 style="margin: 0;">📍 Raum-Login:</h3>
+                <input type="text" id="roomInput" placeholder="Code (z.B. KLASSE-101)" style="margin: 0; width: 200px;">
+                <button onclick="createAndJoinRoom()" class="btn-start" style="margin: 0;">Raum öffnen</button>
+            </div>
+            <div id="room-status-display" class="status-bar" style="display:none; margin: 0;">
+                <span id="status-dot" class="status-dot waiting"></span>
+                <span id="status-text" style="font-weight: bold;">Bereit</span>
+                <span style="margin-left: 10px; color: #64748b;">Raum: <strong id="active-room-display">-</strong></span>
+            </div>
         </div>
-        <div id="room-status-display" class="status-bar" style="display:none; margin-top:10px;">
-            <span id="status-dot" class="status-dot waiting"></span>
-            <span id="status-text">Raum bereit</span>
-        </div>
-    </section>
+    </div>
 
     <div id="main-controls" style="display: none;">
-        <section class="card">
-            <h3>2. Marktverlauf</h3>
-            <canvas id="chart" style="max-height: 300px;"></canvas>
-            <div class="market-info" style="margin-top:15px;">
-                <span>Kurs: <strong id="current-price">100.00</strong> CHF</span>
-                <span>Trend: <span id="trend-label" style="font-weight:bold;">Neutral</span></span>
-            </div>
-        </section>
+        
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start;">
+            
+            <section class="card" style="height: 100%;">
+                <h3 style="margin-top: 0;">📈 Marktverlauf</h3>
+                <canvas id="chart" style="max-height: 350px;"></canvas>
+                
+                <div class="market-info" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; display: flex; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <small style="display: block; color: #64748b;">Aktueller Kurs</small>
+                        <strong id="current-price" style="font-size: 1.8em;">100.00</strong> <small>CHF</small>
+                    </div>
+                    <div style="text-align: center;">
+                        <small style="display: block; color: #64748b;">Trend-Status</small>
+                        <strong id="trend-label" style="font-size: 1.2em; color: #00802f;">Neutral</strong>
+                    </div>
+                </div>
+            </section>
 
-        <section class="card">
-            <h3>3. Markt-Anpassungen</h3>
-            <div class="strategy-grid">
-                <div class="rule-card">
-                    <h4>Schwankung (Vola)</h4>
-                    <div style="font-size: 1.2em; font-weight: bold; margin: 10px 0;">
+            <section class="card" style="height: 100%;">
+                <h3 style="margin-top: 0;">⚙️ Markt-Parameter</h3>
+                
+                <div class="rule-card" style="margin-bottom: 15px; text-align: center;">
+                    <h4 style="margin-bottom: 5px;">Schwankung (Vola)</h4>
+                    <div style="font-size: 2em; font-weight: bold; color: #006b4d; margin: 5px 0;">
                         <span id="vola-display">1.2</span>%
                     </div>
-                    <button onclick="adjustVola(0.001)" class="btn-start" style="width:45%">+</button>
-                    <button onclick="adjustVola(-0.001)" class="btn-start" style="width:45%">-</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="adjustVola(-0.001)" class="btn-start" style="flex: 1;">- 0.1</button>
+                        <button onclick="adjustVola(0.001)" class="btn-start" style="flex: 1;">+ 0.1</button>
+                    </div>
                 </div>
-                <div class="rule-card">
-                    <h4>Trends</h4>
-                    <button onclick="setTrend(0.007, 'Bull')" class="btn-start btn-block" style="background:#10b981; margin-bottom:5px;">📈 Bull</button>
-                    <button onclick="setTrend(-0.007, 'Bear')" class="btn-start btn-block" style="background:#ef4444; margin-bottom:5px;">📉 Bear</button>
-                    <button onclick="setTrend(0, 'Neutral')" class="btn-start btn-block" style="background:#64748b;">⚖️ Reset</button>
-                </div>
-                <div class="rule-card">
-                    <h4>Schocks</h4>
-                    <button onclick="triggerShock(1.10)" class="btn-start btn-block" style="background:#0ea5e9; margin-bottom:5px;">⚡ +10%</button>
-                    <button onclick="triggerShock(0.90)" class="btn-start btn-block" style="background:#6366f1;">💥 -10%</button>
-                </div>
-            </div>
-        </section>
 
-        <div style="margin-top: 20px; display: flex; gap: 15px;">
-            <button id="toggleBtn" onclick="toggleChallenge()" class="btn-start btn-block" style="background:#f59e0b; flex: 2; height: 50px;">
-                🔓 Challenge für Schüler öffnen
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="rule-card">
+                        <h4 style="font-size: 0.8em;">Trends</h4>
+                        <button onclick="setTrend(0.007, 'Bull')" class="btn-start btn-block" style="background:#10b981; font-size: 0.7em;">📈 Bull</button>
+                        <button onclick="setTrend(-0.007, 'Bear')" class="btn-start btn-block" style="background:#ef4444; font-size: 0.7em;">📉 Bear</button>
+                    </div>
+                    <div class="rule-card">
+                        <h4 style="font-size: 0.8em;">Sofort-Schocks</h4>
+                        <button onclick="triggerShock(1.10)" class="btn-start btn-block" style="background:#0ea5e9; font-size: 0.7em;">⚡ +10%</button>
+                        <button onclick="triggerShock(0.90)" class="btn-start btn-block" style="background:#6366f1; font-size: 0.7em;">💥 -10%</button>
+                    </div>
+                </div>
+                <button onclick="setTrend(0, 'Neutral')" class="btn-start btn-block" style="background:#64748b; margin-top: 10px;">⚖️ Trend neutralisieren</button>
+            </section>
+        </div>
+
+        <div class="card" style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <button id="playPauseBtn" onclick="toggleSimulation()" class="btn-start btn-block" style="background:#00802f; height: 55px; font-size: 1.1em;">
+                ▶️ Simulation Starten
             </button>
-            <button onclick="resetEverything()" class="btn-start btn-block" style="background:#000; flex: 1;">
-                🔄 Reset (Markt & Schüler)
+            <button id="toggleBtn" onclick="toggleChallenge()" class="btn-start btn-block" style="background:#f59e0b; height: 55px; font-size: 1.1em;">
+                🔓 Challenge freigeben
+            </button>
+            <button onclick="resetEverything()" class="btn-start btn-block" style="background:#000; height: 55px; font-size: 1.1em;">
+                🔄 Full Reset (Score & Kurs)
             </button>
         </div>
-        
-        <button id="playPauseBtn" onclick="toggleSimulation()" class="btn-start btn-block" style="margin-top:10px; background:#00802f;">
-            ▶️ Simulation Starten
-        </button>
     </div>
 </div>
 
 <script>
     const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4'; 
+    const S_KEY = 'YOUR_KEY_HERE'; 
     const tradingDb = supabase.createClient(S_URL, S_KEY);
 
     let currentRoom = "", price = 100, isSimRunning = false, isChallengeActive = false;
-    let currentTrend = 0, currentVola = 0.012;
-    let priceHistory = [100], timeLabels = [0], chart;
+    let currentTrend = 0, currentVola = 0.012, priceHistory = [100], timeLabels = [0], chart;
 
     function initChart() {
         const ctx = document.getElementById('chart').getContext('2d');
@@ -93,47 +111,40 @@
             type: 'line',
             data: {
                 labels: timeLabels,
-                datasets: [{
-                    label: 'Preis',
-                    data: priceHistory,
-                    borderColor: '#00802f',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 0,
-                    fill: false
-                }]
+                datasets: [{ label: 'Preis', data: priceHistory, borderColor: '#00802f', borderWidth: 2, tension: 0.3, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,128,47,0.05)' }]
             },
-            options: { responsive: true, animation: false, scales: { y: { beginAtZero: false } } }
+            options: { responsive: true, animation: false, scales: { y: { beginAtZero: false, ticks: { stepSize: 5 } } } }
         });
     }
 
     async function createAndJoinRoom() {
         const name = document.getElementById('roomInput').value.trim().toUpperCase();
-        if(!name) return alert("Bitte Code eingeben!");
-        
+        if(!name) return alert("Raum-Code fehlt!");
         const { error } = await tradingDb.from('market').upsert([{ room_id: name, price: 100, challenge_active: false }], { onConflict: 'room_id' });
-        if(error) return alert("Fehler: " + error.message);
-
+        if(error) return alert(error.message);
         currentRoom = name;
         document.getElementById('room-status-display').style.display = 'flex';
-        document.getElementById('active-room-display'); // Placeholder falls nötig
+        document.getElementById('active-room-display').innerText = name;
         document.getElementById('main-controls').style.display = 'block';
         initChart();
     }
 
-    function adjustVola(d) { currentVola = Math.max(0, currentVola + d); document.getElementById('vola-display').innerText = (currentVola * 100).toFixed(1); }
-    function setTrend(v, l) { currentTrend = v; document.getElementById('trend-label').innerText = l; }
+    function adjustVola(d) { currentVola = Math.max(0.001, currentVola + d); document.getElementById('vola-display').innerText = (currentVola * 100).toFixed(1); }
+    function setTrend(v, l) { currentTrend = v; document.getElementById('trend-label').innerText = l; document.getElementById('trend-label').style.color = v > 0 ? '#10b981' : (v < 0 ? '#ef4444' : '#00802f'); }
     function triggerShock(f) { price *= f; updateDB(); }
 
     function toggleSimulation() {
         isSimRunning = !isSimRunning;
-        document.getElementById('playPauseBtn').innerText = isSimRunning ? "⏸️ Pause" : "▶️ Simulation Fortsetzen";
+        const b = document.getElementById('playPauseBtn');
+        b.innerText = isSimRunning ? "⏸️ Simulation Pausieren" : "▶️ Simulation Fortsetzen";
+        b.style.background = isSimRunning ? "#64748b" : "#00802f";
         if(isSimRunning) runLoop();
     }
 
     async function runLoop() {
         if(!isSimRunning) return;
         price = +(price * (1 + (Math.random() - 0.5) * currentVola + currentTrend)).toFixed(2);
+        if(price < 2) price = 2;
         updateDB();
         setTimeout(runLoop, 800);
     }
@@ -141,8 +152,7 @@
     async function updateDB() {
         await tradingDb.from('market').update({ price: price }).eq('room_id', currentRoom);
         document.getElementById('current-price').innerText = price.toFixed(2);
-        priceHistory.push(price);
-        timeLabels.push(timeLabels.length);
+        priceHistory.push(price); timeLabels.push(timeLabels.length);
         if(priceHistory.length > 50) { priceHistory.shift(); timeLabels.shift(); }
         chart.update();
     }
@@ -150,19 +160,17 @@
     async function toggleChallenge() {
         isChallengeActive = !isChallengeActive;
         await tradingDb.from('market').update({ challenge_active: isChallengeActive }).eq('room_id', currentRoom);
-        document.getElementById('toggleBtn').innerText = isChallengeActive ? "🔒 Raum sperren" : "🔓 Raum öffnen";
+        document.getElementById('toggleBtn').innerText = isChallengeActive ? "🔒 Raum für Schüler sperren" : "🔓 Raum für Schüler öffnen";
         document.getElementById('status-dot').className = isChallengeActive ? "status-dot online" : "status-dot waiting";
+        document.getElementById('status-text').innerText = isChallengeActive ? "Aktiv" : "Bereit";
     }
 
     async function resetEverything() {
-        if(!confirm("Alles zurücksetzen?")) return;
-        price = 100;
-        priceHistory = [100];
-        timeLabels = [0];
+        if(!confirm("Achtung: Das setzt den Kurs auf 100.- und ALLE Schüler-Scores auf 1000.- zurück. Fortfahren?")) return;
+        price = 100; priceHistory = [100]; timeLabels = [0];
         await tradingDb.from('market').update({ price: 100 }).eq('room_id', currentRoom);
         await tradingDb.from('leaderboard').update({ score: 1000 }).eq('room_id', currentRoom);
         chart.update();
-        alert("Reset durchgeführt!");
     }
 </script>
 </body>
