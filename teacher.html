@@ -2,212 +2,130 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>🕹️ Teacher Dashboard | Live Konsole</title>
+    <title>Lehrer-Dashboard | Challenge Steuerung</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
-    <script src="charts.js"></script>
     <style>
-        .admin-container { max-width: 1250px; margin: 20px auto; padding: 0 20px; }
-        
-        .dashboard-layout { 
-            display: grid; 
-            grid-template-columns: 280px 1fr 300px; 
-            gap: 20px; 
-            min-height: 500px; /* Mehr Höhe für bessere Lesbarkeit */
-        }
-
-        .price-hero { font-size: 3.2em; font-weight: bold; color: #006b4d; margin: 10px 0; }
-        
-        .trend-active { background-color: #006b4d !important; color: white !important; }
-        
-        .btn-action { 
-            padding: 10px; font-size: 0.9em; width: 100%; margin: 5px 0; 
-            cursor: pointer; border-radius: 6px; border: 1px solid #cbd5e1; 
-            background: #f8fafc; transition: all 0.2s;
-        }
-        .btn-action:hover { background: #f1f5f9; border-color: #94a3b8; }
-
-        canvas { 
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; 
-            width: 100% !important; height: 350px !important; /* Deutlich höherer Chart */
-        }
-
-        h3 { margin: 0 0 12px 0; font-size: 0.85em; color: #64748b; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-        
-        .rule-card { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-
-        .flex-row { display: flex; gap: 8px; align-items: center; }
-        .vola-display { font-size: 1.2em; font-weight: bold; width: 50px; text-align: center; }
+        .admin-card { max-width: 600px; margin: 40px auto; padding: 20px; border: 2px solid #006b4d; border-radius: 12px; }
+        .room-setup { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
+        .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+        .active { background: #dcfce7; color: #166534; }
+        .inactive { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
-
 <body>
-    <header style="padding: 15px 5%;">
-        <div class="logo-container">
-            <img src="HSG_Logo_DE_RGB.png" alt="HSG Logo" style="height: 40px;">
+
+<div class="container">
+    <div class="admin-card">
+        <h1>👨‍🏫 Lehrer-Konsole</h1>
+        
+        <div class="room-setup">
+            <h3>1. Raum erstellen</h3>
+            <div class="input-group">
+                <input type="text" id="roomInput" placeholder="z.B. KLASSE-4A" style="width: 70%;">
+                <button onclick="createAndJoinRoom()" class="btn-start">Raum erstellen</button>
+            </div>
+            <p id="room-status" style="font-size: 0.85em; color: #64748b; margin-top: 10px;">Kein Raum aktiv.</p>
         </div>
-        <div style="font-weight: bold; color: #006b4d;">Teacher Dashboard</div>
-    </header>
 
-    <div class="admin-container">
-        <div class="dashboard-layout">
+        <div id="room-controls" style="display: none;">
+            <h3>2. Challenge Steuerung: <span id="active-room-display" style="color:#006b4d;">-</span></h3>
+            <div class="market-info">
+                Aktueller Preis: <strong id="current-price">100.00</strong> CHF
+            </div>
             
-            <div class="rule-card">
-                <div>
-                    <h3>📡 Markt-Status</h3>
-                    <div id="statusInfo" style="font-size: 0.9em; font-weight: bold;">STANDBY</div>
-                    <div class="price-hero" id="priceLabel">100.00</div>
-                    <button id="masterAction" class="btn-start" style="width:100%;" onclick="toggleMarket()">▶ Markt Starten</button>
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <h3>🛠 System-Kontrolle</h3>
-                    <button id="challengeToggleBtn" class="btn-action" style="background: #fff7ed; color: #c2410c; border-color: #fdba74;" onclick="toggleChallenge()">🔓 Challenge öffnen</button>
-                    <button class="btn-action" style="color: #ef4444; border-color: #fecaca; font-size: 0.8em;" onclick="fullReset()">⚠️ System Reset</button>
-                </div>
+            <div class="controls">
+                <button id="toggleBtn" onclick="toggleChallenge()" class="btn-start" style="background: #f59e0b;">🔓 Challenge freigeben</button>
+                <button onclick="resetChallenge()" class="btn-start" style="background: #ef4444;">🔄 Reset (Alle raus)</button>
             </div>
-
-            <div class="rule-card">
-                <h3>📈 Kursverlauf (HSG-Modell)</h3>
-                <canvas id="chart"></canvas>
-            </div>
-
-            <div class="rule-card">
-                <div>
-                    <h3>🚀 Trend-Steuerung</h3>
-                    <button class="btn-action" id="btn-bull" onclick="setTrend('bull')">📈 Bull-Markt (Trend +)</button>
-                    <button class="btn-action trend-active" id="btn-sideways" onclick="setTrend('sideways')">↔ Neutraler Markt</button>
-                    <button class="btn-action" id="btn-bear" onclick="setTrend('bear')">📉 Bear-Markt (Trend -)</button>
-                </div>
-
-                <div style="margin-top: 25px;">
-                    <h3>⚡ Kurzfristige Sprünge</h3>
-                    <div class="flex-row">
-                        <button class="btn-action" style="background: #dcfce7; color: #166534;" onclick="triggerSpike(5)">🚀 Hype +5%</button>
-                        <button class="btn-action" style="background: #fee2e2; color: #991b1b;" onclick="triggerSpike(-5)">💥 Crash -5%</button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 25px;">
-                    <h3>🌊 Volatilität (Rauschen)</h3>
-                    <div class="flex-row">
-                        <button class="btn-action" onclick="adjustVol(-0.5)">-</button>
-                        <div class="vola-display"><span id="volLabel">1.5</span>%</div>
-                        <button class="btn-action" onclick="adjustVol(0.5)">+</button>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
+</div>
 
-    <script>
-        const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
-        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4';
-        const db = supabase.createClient(S_URL, S_KEY);
+<script>
+    const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
+    const S_KEY = 'YOUR_SUPABASE_KEY'; // Nutze deinen Key
+    const tradingDb = supabase.createClient(S_URL, S_KEY);
+
+    let currentRoom = "";
+    let isChallengeActive = false;
+    let price = 100;
+    let loopTimeout;
+
+    // --- RAUM ERSTELLEN ---
+    async function createAndJoinRoom() {
+        const roomName = document.getElementById('roomInput').value.trim().toUpperCase();
+        if (!roomName) return alert("Bitte Raumnamen eingeben!");
+
+        // In Supabase prüfen, ob Raum existiert oder neu anlegen
+        const { data, error } = await tradingDb
+            .from('market')
+            .upsert([{ 
+                room_id: roomName, 
+                price: 100, 
+                challenge_active: false 
+            }], { onConflict: 'room_id' })
+            .select();
+
+        if (error) {
+            alert("Fehler beim Erstellen: " + error.message);
+        } else {
+            currentRoom = roomName;
+            document.getElementById('room-status').innerText = "✅ Raum '" + roomName + "' ist bereit.";
+            document.getElementById('active-room-display').innerText = roomName;
+            document.getElementById('room-controls').style.display = 'block';
+            startPriceLoop();
+        }
+    }
+
+    // --- PREIS-LOOP (Nur für diesen Raum) ---
+    async function startPriceLoop() {
+        if (!currentRoom) return;
+
+        // Preis leicht schwanken lassen
+        let change = price * (Math.random() - 0.5) * 0.02;
+        price = +(price + change).toFixed(2);
+        if (price < 10) price = 10;
+
+        // Update in DB für diesen spezifischen Raum
+        await tradingDb.from('market')
+            .update({ price: price })
+            .eq('room_id', currentRoom);
+
+        document.getElementById('current-price').innerText = price.toFixed(2);
         
-        let price = 100.00, history = [100.00], portfolioHistory = [100.00]; 
-        let activeTrend = 'sideways', volatility = 1.5, marketActive = false, tickerId = null, challengeActive = false;
+        loopTimeout = setTimeout(startPriceLoop, 800);
+    }
 
-        // Funktion im Lehrer-Dashboard
-        async function createRoom() {
-            const roomName = document.getElementById('roomInput').value.trim();
-            if (!roomName) return alert("Bitte einen Raumnamen eingeben!");
+    // --- FREIGABE STEUERN ---
+    async function toggleChallenge() {
+        isChallengeActive = !isChallengeActive;
+        const btn = document.getElementById('toggleBtn');
+
+        await tradingDb.from('market')
+            .update({ challenge_active: isChallengeActive })
+            .eq('room_id', currentRoom);
+
+        if (isChallengeActive) {
+            btn.innerText = "🔒 Challenge sperren";
+            btn.style.background = "#64748b";
+        } else {
+            btn.innerText = "🔓 Challenge freigeben";
+            btn.style.background = "#f59e0b";
+        }
+    }
+
+    // --- RESET ---
+    async function resetChallenge() {
+        if (!confirm("Alle Schüler aus diesem Raum werfen?")) return;
         
-            // Neuen Eintrag in der Tabelle 'market' anlegen
-            const { data, error } = await tradingDb
-                .from('market')
-                .insert([{ 
-                    room_id: roomName, 
-                    price: 100, 
-                    challenge_active: false 
-                }])
-                .select();
+        await tradingDb.from('market')
+            .update({ price: -1, challenge_active: false })
+            .eq('room_id', currentRoom);
         
-            if (error) {
-                alert("Raum existiert bereits oder Fehler: " + error.message);
-            } else {
-                alert("Raum '" + roomName + "' wurde erstellt! Gib den Schülern diesen Code.");
-                // Starte hier die Preis-Update-Loop für DIESEN roomName
-                startPriceSimulation(roomName); 
-            }
-        }
-        
-        function toggleMarket() {
-            const btn = document.getElementById('masterAction');
-            const status = document.getElementById('statusInfo');
-            marketActive = !marketActive;
-            
-            if (marketActive) {
-                btn.innerText = "⏹ Stopp";
-                btn.classList.add('running');
-                status.innerText = "STATUS: LIVE";
-                status.style.color = "#22c55e";
-                tickerId = setInterval(executeTick, 500);
-            } else {
-                btn.innerText = "▶ Markt Starten";
-                btn.classList.remove('running');
-                status.innerText = "STATUS: STANDBY";
-                status.style.color = "#94a3b8";
-                clearInterval(tickerId);
-            }
-        }
-
-        async function executeTick() {
-            let changePercent = (Math.random() - 0.5) * (volatility / 100);
-            if (activeTrend === 'bull') changePercent += 0.006; 
-            if (activeTrend === 'bear') changePercent -= 0.007; 
-            
-            price = Math.max(0.5, +(price * (1 + changePercent)).toFixed(2));
-            history.push(price);
-            portfolioHistory.push(price); // Trick für grüne Linie
-
-            if(history.length > 50) { history.shift(); portfolioHistory.shift(); }
-            updateUI();
-        }
-
-        async function updateUI() {
-            document.getElementById('priceLabel').innerText = price.toFixed(2);
-            if (typeof drawChart === "function") drawChart(); 
-            await db.from('market').update({ price: price }).eq('id', 1);
-        }
-
-        function setTrend(t) {
-            activeTrend = t;
-            document.querySelectorAll('#btn-bull, #btn-sideways, #btn-bear').forEach(b => b.classList.remove('trend-active'));
-            document.getElementById('btn-' + t).classList.add('trend-active');
-        }
-
-        async function triggerSpike(percent) {
-            if (!marketActive) return;
-            price = Math.max(0.5, +(price * (1 + percent/100)).toFixed(2));
-            history.push(price); portfolioHistory.push(price);
-            updateUI();
-        }
-
-        function adjustVol(val) {
-            volatility = Math.max(0.1, +(volatility + val).toFixed(1));
-            document.getElementById('volLabel').innerText = volatility.toFixed(1);
-        }
-
-        async function toggleChallenge() {
-            challengeActive = !challengeActive;
-            const btn = document.getElementById('challengeToggleBtn');
-            await db.from('market').update({ challenge_active: challengeActive }).eq('id', 1);
-            btn.innerText = challengeActive ? "🔒 Challenge schließen" : "🔓 Challenge öffnen";
-            btn.style.background = challengeActive ? "#fee2e2" : "#fff7ed";
-            btn.style.color = challengeActive ? "#991b1b" : "#c2410c";
-        }
-
-        async function fullReset() {
-            if (!confirm("System-Reset löscht alle Schüler-Ergebnisse. Sicher?")) return;
-            price = 100.00; history = [100.00]; portfolioHistory = [100.00];
-            await db.from('market').update({ price: -1 }).eq('id', 1);
-            await db.from('leaderboard').delete().neq('name', '---');
-            updateUI();
-        }
-
-        window.onload = () => { if (typeof drawChart === "function") drawChart(); };
-    </script>
+        location.reload(); // Lehrer-Seite auch neu laden
+    }
+</script>
 </body>
 </html>
