@@ -50,7 +50,6 @@
                         <button onclick="adjustVola(-0.001)" class="btn-start" style="flex:1; padding: 10px; min-width: 0;">-</button>
                         <button onclick="adjustVola(0.001)" class="btn-start" style="flex:1; padding: 10px; min-width: 0;">+</button>
                     </div>
-                    <p style="font-size: 0.75em; color: #64748b; margin-top: 10px;">Basis-Rauschen pro Tick</p>
                 </div>
 
                 <div class="rule-card">
@@ -62,8 +61,8 @@
 
                 <div class="rule-card">
                     <h4>Direkt-Eingriff</h4>
-                    <button onclick="triggerShock(1.10)" class="btn-start btn-block" style="background:#0ea5e9; margin-bottom:5px; font-size: 0.8em;">⚡ +10% Sprung</button>
-                    <button onclick="triggerShock(0.90)" class="btn-start btn-block" style="background:#6366f1; margin-bottom:5px; font-size: 0.8em;">💥 -10% Crash</button>
+                    <button onclick="triggerShock(1.10)" class="btn-start btn-block" style="background:#0ea5e9; margin-bottom:5px; font-size: 0.8em;">⚡ +10%</button>
+                    <button onclick="triggerShock(0.90)" class="btn-start btn-block" style="background:#6366f1; margin-bottom:5px; font-size: 0.8em;">💥 -10%</button>
                     <button onclick="resetPrice()" class="btn-start btn-block" style="background:#000; font-size: 0.8em;">🔄 Reset 100.-</button>
                 </div>
             </div>
@@ -72,7 +71,6 @@
                 <button id="playPauseBtn" onclick="toggleSimulation()" class="btn-start btn-block" style="background: #00802f; height: 60px; font-size: 1.3em;">
                     ▶️ Simulation Starten
                 </button>
-                
                 <button id="toggleBtn" onclick="toggleChallenge()" class="btn-start btn-block" style="background:#f59e0b;">
                     🔓 Challenge für Schüler freigeben
                 </button>
@@ -88,11 +86,11 @@
 
 <script>
     const S_URL = 'https://tzatuzzwdvkayowffbxy.supabase.co';
-    const S_KEY = 'YOUR_KEY'; 
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YXR1enp3ZHZrYXlvd2ZmYnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTI1NDcsImV4cCI6MjA4ODEyODU0N30.cz5jRfhlOGs9OhFeIfdORPjDljcysI_6db3ny9fLRE4'; // <--- DEINEN KEY HIER EINSETZEN
     const tradingDb = supabase.createClient(S_URL, S_KEY);
 
     let currentRoom = "", price = 100, isChallengeActive = false, isSimRunning = false;
-    let currentTrend = 0, currentVola = 0.012; // 1.2% Start-Vola
+    let currentTrend = 0, currentVola = 0.012; 
     let priceHistory = [100], timeLabels = [0], chart;
 
     function initChart() {
@@ -130,7 +128,6 @@
         setInterval(updateLeaderboard, 2500);
     }
 
-    // --- NEU: VOLA ANPASSEN ---
     function adjustVola(delta) {
         currentVola = Math.max(0.001, currentVola + delta);
         document.getElementById('vola-display').innerText = (currentVola * 100).toFixed(1);
@@ -153,7 +150,6 @@
         updateDBAndUI();
     }
 
-    // --- NEU: SIMULATION START/PAUSE ---
     function toggleSimulation() {
         isSimRunning = !isSimRunning;
         const btn = document.getElementById('playPauseBtn');
@@ -169,11 +165,9 @@
 
     async function runLoop() {
         if (!isSimRunning || !currentRoom) return;
-
         let change = price * ((Math.random() - 0.5) * currentVola + currentTrend);
         price = +(price + change).toFixed(2);
         if (price < 5) price = 5;
-
         updateDBAndUI();
         setTimeout(runLoop, 800);
     }
@@ -189,4 +183,21 @@
 
     async function toggleChallenge() {
         isChallengeActive = !isChallengeActive;
-        const btn = document.getElementById('toggle
+        const btn = document.getElementById('toggleBtn');
+        await tradingDb.from('market').update({ challenge_active: isChallengeActive }).eq('room_id', currentRoom);
+        btn.innerText = isChallengeActive ? "🔒 Challenge sperren" : "🔓 Challenge freigeben";
+        btn.style.background = isChallengeActive ? "#64748b" : "#f59e0b";
+        document.getElementById('status-dot').className = isChallengeActive ? "status-dot online" : "status-dot waiting";
+    }
+
+    async function updateLeaderboard() {
+        if(!currentRoom) return;
+        const { data } = await tradingDb.from('leaderboard').select('name, score').eq('room_id', currentRoom).order('score', { ascending: false }).limit(3);
+        if (data) {
+            document.getElementById('leaderboard-list').innerHTML = data.map((s, i) => 
+                `<div class="input-group"><span>${i+1}. ${s.name}</span><strong>${Math.round(s.score)}.-</strong></div>`).join('');
+        }
+    }
+</script>
+</body>
+</html>
