@@ -326,3 +326,68 @@ input:checked + .ios-slider:before { transform: translateX(22px); }
     from { box-shadow: inset 0 0 5px rgba(255, 215, 0, 0.2); }
     to { box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.4); }
 }
+
+/* --- 11. CHALLENGE & ADMIN ERWEITERUNGEN --- */
+
+/* Wiederverwendung der .card für das Setup-Screen */
+.setup-container {
+    max-width: 450px;
+    margin: 60px auto;
+    text-align: center;
+}
+
+/* Spezifische Inputs für Login/Raum-Erstellung (erbt Font/Farben) */
+.setup-container input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+/* Status-Anzeige (Server/Raum) */
+.status-bar {
+    font-size: 0.8em;
+    color: #64748b;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ef4444; /* Standard: Fehler/Inaktiv */
+}
+
+.status-dot.online { background: #10b981; } /* Grün */
+.status-dot.waiting { background: #f59e0b; } /* Orange */
+
+/* Buttons auf volle Breite zwingen (nur im Setup) */
+.btn-block {
+    width: 100%;
+    display: block;
+}
+
+/* Strategie-Tags (Wiederverwendbar für Challenge-Kacheln) */
+.card-tag { 
+    font-size: 0.7em; 
+    font-weight: bold; 
+    padding: 3px 8px; 
+    border-radius: 4px; 
+    margin-bottom: 10px; 
+    display: inline-block;
+}
+.tag-single { background: #e2e8f0; color: #475569; }
+.tag-allin { background: #006b4d; color: white; }
+
+/* Akzentuierung für die All-In Karten */
+.rule-card.allin { 
+    border-left: 5px solid #006b4d; 
+    background: #f0fdf4; 
+}
