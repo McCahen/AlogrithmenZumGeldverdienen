@@ -45,7 +45,7 @@ function drawChart() {
     if (hasPortfolio) {
         ctx.fillStyle = "#006b4d";
         ctx.textAlign = "right";
-        ctx.fillText("━ Portfolio (Wert)", canvas.width - padding.right, 20);
+        ctx.fillText("━ Portfolio (CHF total)", canvas.width - padding.right, 20);
     }
 
     // --- Raster & Achsen ---
