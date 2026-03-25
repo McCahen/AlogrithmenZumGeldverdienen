@@ -36,7 +36,7 @@
 
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <button id="playPauseBtn" onclick="toggleSimulation()" class="btn-start btn-block" style="height: 55px; font-size: 1.1em;">
-                        ▶️ Simulation Starten
+                        ▶️ Starten
                     </button>
                     
                     <button id="toggleBtn" onclick="toggleChallenge()" class="btn-start btn-block" style="background:#64748b;">
@@ -162,11 +162,11 @@
         const b = document.getElementById('playPauseBtn');
         
         if(isSimRunning) {
-            b.innerText = "⏸️ Simulation Stoppen";
+            b.innerText = "⏸️ Stoppen";
             b.classList.add('running'); // Nutzt CSS: .btn-start.running { background: #ef4444 !important; }
             runLoop();
         } else {
-            b.innerText = "▶️ Simulation Starten";
+            b.innerText = "▶️ Starten";
             b.classList.remove('running'); // Zurück zu HSG-Grün
         }
     }
